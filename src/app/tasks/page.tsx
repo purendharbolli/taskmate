@@ -4,14 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Search,
-  Filter,
-  MapPin,
   SlidersHorizontal,
   X,
   PlusCircle,
   Clock,
-  Sparkles,
-  Inbox
+  MapPin,
+  Inbox,
+  ArrowRight,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react';
 import { TaskCard } from '@/components/TaskCard';
 import { BrutalButton } from '@/components/ui/BrutalButton';
@@ -25,11 +26,12 @@ export default function TasksPage() {
   const [colleges, setColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter States
+  // Filter & Search States
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCollege, setSelectedCollege] = useState('all');
-  const [maxBudget, setMaxBudget] = useState(1000);
+  const [sortBy, setSortBy] = useState<'newest' | 'deadline' | 'budget'>('newest');
+  const [maxBudget, setMaxBudget] = useState(1500);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
   const fetchTasks = () => {
@@ -43,11 +45,21 @@ export default function TasksPage() {
     fetch(`/api/tasks?${query.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.tasks) setTasks(data.tasks);
+        let taskList: Task[] = data.tasks || [];
+
+        // Client-side Sort
+        if (sortBy === 'newest') {
+          taskList = taskList.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        } else if (sortBy === 'budget') {
+          taskList = taskList.sort((a, b) => b.budget - a.budget);
+        }
+
+        setTasks(taskList);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch(() => {
         setLoading(false);
       });
   };
@@ -60,9 +72,14 @@ export default function TasksPage() {
         if (data.colleges) setColleges(data.colleges);
       });
 
-    // Fetch tasks
+    fetch('/api/tasks')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.categories) setCategories(data.categories);
+      });
+
     fetchTasks();
-  }, [selectedCategory, selectedCollege, maxBudget]);
+  }, [selectedCategory, selectedCollege, maxBudget, sortBy]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,195 +90,204 @@ export default function TasksPage() {
     setSearch('');
     setSelectedCategory('all');
     setSelectedCollege('all');
-    setMaxBudget(1000);
+    setSortBy('newest');
+    setMaxBudget(1500);
   };
 
   const cardVariants: ('white' | 'yellow' | 'blue' | 'pink')[] = [
     'white',
     'yellow',
+    'white',
     'blue',
+    'white',
     'pink',
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-      {/* Page Title & Subtitle */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 border-black/10 pb-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <BrutalBadge variant="yellow" size="sm">
               CAMPUS MARKETPLACE
             </BrutalBadge>
-            <span className="text-xs font-black uppercase text-taskBlack/60">
-              Telangana Pilot
+            <span className="text-xs font-bold text-black/60">
+              {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} found
             </span>
           </div>
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-taskBlack">
-            Find work. Get paid.
+          <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-taskBlack">
+            Tasks near you
           </h1>
-          <p className="text-sm sm:text-base font-bold text-taskBlack/70 mt-1">
-            Browse verified tasks posted by fellow students on your campus.
+          <p className="text-xs sm:text-sm font-bold text-taskBlack/70 mt-1">
+            Browse legitimate student requests on campus. Filter by category, college, or deadline.
           </p>
         </div>
 
         <Link href="/tasks/create">
-          <BrutalButton variant="yellow" size="lg" className="w-full md:w-auto">
+          <BrutalButton variant="yellow" size="lg">
             <PlusCircle className="w-4 h-4 stroke-[3]" />
             <span>POST A TASK</span>
           </BrutalButton>
         </Link>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="bg-white brutal-border brutal-shadow p-4 mb-8">
-        <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row items-stretch gap-3">
-          {/* Search Input */}
+      {/* Search Bar & Mobile Filter Toggle */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleSearchSubmit} className="flex-1 flex gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-black/50" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-black/50 stroke-[2.5]" />
             <input
               type="text"
-              placeholder="Search tasks (e.g. record writing, charts, PPT, printing, errands)..."
+              placeholder="Search tasks (e.g. lab record, PPT, poster, diagrams)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full brutal-input pl-10 pr-4 py-2.5 text-sm font-bold"
+              className="w-full brutal-input pl-10 pr-4 py-2.5 text-xs sm:text-sm font-bold"
             />
           </div>
-
-          {/* Quick College Filter */}
-          <select
-            value={selectedCollege}
-            onChange={(e) => setSelectedCollege(e.target.value)}
-            className="brutal-input px-3.5 py-2.5 text-xs font-bold bg-taskOffWhite"
-          >
-            <option value="all">📍 All Campuses</option>
-            {colleges.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.short_name || c.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Quick Category Filter */}
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="brutal-input px-3.5 py-2.5 text-xs font-bold bg-taskOffWhite"
-          >
-            <option value="all">✦ All Categories</option>
-            <option value="cat-record">Record Writing</option>
-            <option value="cat-notes">Notes Copying</option>
-            <option value="cat-diagrams">Diagrams &amp; Charts</option>
-            <option value="cat-ppt">PPT Creation</option>
-            <option value="cat-poster">Poster Design</option>
-            <option value="cat-print">Printing &amp; Binding</option>
-            <option value="cat-errand">Campus Errands</option>
-            <option value="cat-event">Event Assistance</option>
-            <option value="cat-video">Video &amp; Media</option>
-            <option value="cat-data">Data Entry</option>
-          </select>
-
-          {/* Search Button */}
           <BrutalButton type="submit" variant="yellow" size="md">
             <span>SEARCH</span>
           </BrutalButton>
         </form>
 
-        {/* Budget Slider & Clear Button */}
-        <div className="mt-4 pt-3 border-t-2 border-black/10 flex flex-wrap items-center justify-between gap-4 text-xs font-bold">
-          <div className="flex items-center gap-3">
-            <span className="uppercase font-black text-taskBlack">Max Budget:</span>
+        <button
+          onClick={() => setShowFiltersMobile(!showFiltersMobile)}
+          className="sm:hidden brutal-btn bg-white py-2.5 px-4 text-xs font-black uppercase flex items-center justify-center gap-2"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          <span>Filters</span>
+        </button>
+      </div>
+
+      {/* Filter Bar */}
+      <div
+        className={clsx(
+          'bg-white brutal-border p-4 brutal-shadow-sm space-y-4',
+          showFiltersMobile ? 'block' : 'hidden sm:block'
+        )}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Campus Filter */}
+          <div>
+            <label className="block text-[11px] font-black uppercase text-taskBlack mb-1">
+              Campus / College
+            </label>
+            <select
+              value={selectedCollege}
+              onChange={(e) => setSelectedCollege(e.target.value)}
+              className="w-full brutal-input py-2 px-2.5 text-xs font-bold"
+            >
+              <option value="all">All Campuses</option>
+              {colleges.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.short_name || c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <label className="block text-[11px] font-black uppercase text-taskBlack mb-1">
+              Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full brutal-input py-2 px-2.5 text-xs font-bold"
+            >
+              <option value="all">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort Filter */}
+          <div>
+            <label className="block text-[11px] font-black uppercase text-taskBlack mb-1">
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="w-full brutal-input py-2 px-2.5 text-xs font-bold"
+            >
+              <option value="newest">Newest First</option>
+              <option value="budget">Highest Budget</option>
+              <option value="deadline">Upcoming Deadline</option>
+            </select>
+          </div>
+
+          {/* Max Budget Slider */}
+          <div>
+            <div className="flex items-center justify-between text-[11px] font-black uppercase text-taskBlack mb-1">
+              <span>Max Budget</span>
+              <span className="font-mono text-taskGreen">₹{maxBudget}</span>
+            </div>
             <input
               type="range"
               min="100"
-              max="1500"
+              max="2000"
               step="50"
               value={maxBudget}
               onChange={(e) => setMaxBudget(Number(e.target.value))}
-              className="accent-black cursor-pointer"
+              className="w-full accent-black cursor-pointer"
             />
-            <span className="bg-taskYellow px-2 py-0.5 brutal-border text-xs font-black">
-              Up to ₹{maxBudget}
-            </span>
           </div>
+        </div>
 
-          {(search || selectedCategory !== 'all' || selectedCollege !== 'all' || maxBudget < 1000) && (
-            <button
-              onClick={clearAllFilters}
-              className="text-xs uppercase font-black underline hover:text-red-600 flex items-center gap-1"
-            >
-              <X className="w-3.5 h-3.5" />
-              <span>Reset Filters</span>
-            </button>
-          )}
+        <div className="flex items-center justify-between pt-2 border-t border-black/10">
+          <span className="text-[11px] font-bold text-black/60">
+            Showing verified legitimate peer assistance tasks only
+          </span>
+          <button
+            onClick={clearAllFilters}
+            className="text-[11px] font-black uppercase underline hover:text-red-600"
+          >
+            Reset Filters
+          </button>
         </div>
       </div>
 
-      {/* Task Grid & Feed */}
+      {/* Task List Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="brutal-border bg-white p-6 h-64 animate-pulse">
-              <div className="h-4 bg-gray-200 w-1/3 mb-4" />
-              <div className="h-6 bg-gray-300 w-3/4 mb-3" />
-              <div className="h-4 bg-gray-200 w-full mb-2" />
-              <div className="h-4 bg-gray-200 w-2/3" />
-            </div>
-          ))}
+        <div className="py-16 text-center">
+          <div className="w-10 h-10 brutal-border bg-taskYellow animate-spin mx-auto mb-3" />
+          <p className="font-black text-xs uppercase text-taskBlack">Loading campus tasks...</p>
         </div>
       ) : tasks.length === 0 ? (
-        /* Empty State */
-        <div className="brutal-border bg-white brutal-shadow-lg p-10 md:p-16 text-center max-w-xl mx-auto my-8 space-y-4">
-          <div className="w-16 h-16 bg-taskYellow brutal-border brutal-shadow-sm flex items-center justify-center mx-auto">
-            <Inbox className="w-8 h-8 text-taskBlack stroke-[2.5]" />
+        <div className="brutal-border bg-white p-12 text-center space-y-4 max-w-xl mx-auto my-8">
+          <Inbox className="w-12 h-12 text-black/30 mx-auto stroke-[2]" />
+          <div className="space-y-1">
+            <h3 className="text-xl font-black uppercase text-taskBlack">No tasks nearby yet</h3>
+            <p className="text-xs sm:text-sm font-bold text-black/60">
+              Be the first to post a task on your campus.
+            </p>
           </div>
-          <h2 className="text-2xl font-black uppercase text-taskBlack">
-            Nothing nearby yet.
-          </h2>
-          <p className="text-xs sm:text-sm font-bold text-taskBlack/70 leading-relaxed">
-            No tasks match your current filters. Try widening your search, selecting all campuses, or post a task yourself!
-          </p>
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={clearAllFilters}
-              className="brutal-btn bg-white hover:bg-taskOffWhite px-4 py-2 text-xs font-black uppercase"
-            >
-              Clear Filters
-            </button>
-            <Link href="/tasks/create">
-              <BrutalButton variant="yellow" size="md">
-                <span>POST THIS TASK</span>
-              </BrutalButton>
-            </Link>
-          </div>
+          <Link href="/tasks/create">
+            <BrutalButton variant="yellow" size="lg">
+              <span>POST A TASK →</span>
+            </BrutalButton>
+          </Link>
         </div>
       ) : (
-        /* Tasks List */
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-black uppercase text-taskBlack/70">
-              Showing {tasks.length} Open Campus Tasks
-            </span>
-            <span className="text-xs font-bold text-taskBlack/50">
-              Sorted by newest
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tasks.map((task, idx) => {
-              const variant = cardVariants[idx % cardVariants.length];
-              const col = colleges.find((c) => c.id === task.college_id);
-
-              return (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  categoryName={(task as any).category?.name || 'General Help'}
-                  collegeName={col?.short_name || 'SNIST'}
-                  variant={variant}
-                />
-              );
-            })}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tasks.map((task, idx) => {
+            const cat = categories.find((c) => c.id === task.category_id);
+            const col = colleges.find((c) => c.id === task.college_id);
+            return (
+              <TaskCard
+                key={task.id}
+                task={task}
+                categoryName={cat?.name}
+                collegeName={col?.short_name || 'SNIST'}
+                variant={cardVariants[idx % cardVariants.length]}
+              />
+            );
+          })}
         </div>
       )}
     </div>

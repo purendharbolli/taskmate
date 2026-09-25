@@ -6,86 +6,101 @@ import {
   MapPin,
   Building2,
   UserCheck,
-  ShieldCheck,
+  Check,
   ArrowRight,
   ArrowLeft,
-  Search,
-  Plus,
-  Check,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  Briefcase,
+  AlertCircle
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
-import { BrutalModal } from '@/components/ui/BrutalModal';
-import { State, City, College } from '@/lib/types';
+import { State, City, College, Campus } from '@/lib/types';
 import clsx from 'clsx';
 
 export default function OnboardingPage() {
   const router = useRouter();
 
-  // Current Step (1 to 4)
+  // 4 Sequential Steps
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Cascading Location Data from Database
+  // Cascading Location Hierarchy from Database
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
+  const [campuses, setCampuses] = useState<Campus[]>([]);
 
-  // Selected Values
+  // Step 1: "Where do you study?"
   const [selectedState, setSelectedState] = useState('st-tg'); // Telangana default
   const [selectedCity, setSelectedCity] = useState('city-hyd'); // Hyderabad default
   const [selectedCollege, setSelectedCollege] = useState('');
-  const [collegeSearch, setCollegeSearch] = useState('');
+  const [selectedCampus, setSelectedCampus] = useState('');
 
-  // Step 3 Profile Info
+  // Step 2: "Tell us about yourself"
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [avatar, setAvatar] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([
+    'Handwriting',
+    'PowerPoint',
+  ]);
 
-  // Step 4 Verification Info
-  const [collegeEmail, setCollegeEmail] = useState('');
-  const [verificationSuccess, setVerificationSuccess] = useState(false);
-
-  // College Request Modal State
-  const [requestModalOpen, setRequestModalOpen] = useState(false);
-  const [newCollegeName, setNewCollegeName] = useState('');
-  const [newCollegeWebsite, setNewCollegeWebsite] = useState('');
-  const [newCollegeMessage, setNewCollegeMessage] = useState('');
-  const [requestSent, setRequestSent] = useState(false);
+  // Step 3: "How do you want to use TaskMate?" (Allow both)
+  const [needHelp, setNeedHelp] = useState(true);
+  const [wantToEarn, setWantToEarn] = useState(true);
 
   const availableSkills = [
     'Handwriting',
     'Record Writing',
-    'Notes Copying',
-    'Diagrams & Charts',
+    'Canva',
     'PowerPoint',
-    'Poster Design',
-    'Printing & Binding',
-    'Data Entry',
+    'Diagrams & Charts',
     'Video Editing',
     'Photography',
+    'Printing',
+    'Scanning',
+    'Data Entry',
     'LaTeX Formatting',
     'Campus Errands',
   ];
 
-  // Load States from DB
+  // Initial load: Fetch States & Cities from DB
   useEffect(() => {
     fetch('/api/locations')
       .then((res) => res.json())
       .then((data) => {
         if (data.states) setStates(data.states);
-        if (data.cities) setCities(data.cities.filter((c: City) => c.state_id === selectedState));
+        if (data.cities) {
+          const defaultCities = data.cities.filter((c: City) => c.state_id === 'st-tg');
+          setCities(defaultCities);
+        }
       })
       .catch((err) => console.error(err));
-  }, []);
 
-  // When State Changes -> Query Database for Cities
+    // Also fetch current user to prefill name
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setName(data.user.name || '');
+          setAvatar(data.user.avatar || '');
+          if (data.user.onboarding_completed) {
+            // Already completed onboarding
+            router.push('/dashboard');
+          }
+        }
+      });
+  }, [router]);
+
+  // When State Changes -> Fetch Cities
   const handleStateChange = (stateId: string) => {
     setSelectedState(stateId);
     setSelectedCity('');
     setSelectedCollege('');
+    setSelectedCampus('');
     fetch(`/api/locations?stateId=${stateId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -93,7 +108,7 @@ export default function OnboardingPage() {
       });
   };
 
-  // When City Changes -> Query Database for Colleges belonging to that City
+  // When City Changes -> Fetch Colleges
   useEffect(() => {
     if (selectedCity) {
       fetch(`/api/locations?cityId=${selectedCity}`)
@@ -106,10 +121,27 @@ export default function OnboardingPage() {
         });
     } else {
       setColleges([]);
+      setSelectedCollege('');
     }
   }, [selectedCity]);
 
-  // Toggle Skill Selection
+  // When College Changes -> Fetch Campuses
+  useEffect(() => {
+    if (selectedCollege) {
+      fetch(`/api/locations?collegeId=${selectedCollege}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setCampuses(data.campuses || []);
+          if (data.campuses && data.campuses.length > 0) {
+            setSelectedCampus(data.campuses[0].id);
+          }
+        });
+    } else {
+      setCampuses([]);
+      setSelectedCampus('');
+    }
+  }, [selectedCollege]);
+
   const toggleSkill = (skill: string) => {
     if (selectedSkills.includes(skill)) {
       setSelectedSkills(selectedSkills.filter((s) => s !== skill));
@@ -118,429 +150,253 @@ export default function OnboardingPage() {
     }
   };
 
-  // Submit Step 1
-  const handleStep1Next = async () => {
-    if (!selectedState || !selectedCity) {
-      setError('Please select your state and city.');
+  // Navigation handlers
+  const handleNextFromStep1 = () => {
+    if (!selectedState || !selectedCity || !selectedCollege) {
+      setError('Please select your state, city, and college to continue.');
       return;
     }
     setError(null);
-    setLoading(true);
-    await fetch('/api/auth/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        step: 2,
-        state_id: selectedState,
-        city_id: selectedCity,
-      }),
-    });
-    setLoading(false);
     setCurrentStep(2);
   };
 
-  // Submit Step 2
-  const handleStep2Next = async () => {
-    if (!selectedCollege) {
-      setError('Please select your college to continue.');
+  const handleNextFromStep2 = () => {
+    if (!name.trim()) {
+      setError('Please provide your name.');
       return;
     }
     setError(null);
-    setLoading(true);
-    await fetch('/api/auth/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        step: 3,
-        college_id: selectedCollege,
-      }),
-    });
-    setLoading(false);
     setCurrentStep(3);
   };
 
-  // Submit Step 3
-  const handleStep3Next = async () => {
-    if (!name.trim()) {
-      setError('Please enter your name.');
+  const handleNextFromStep3 = () => {
+    if (!needHelp && !wantToEarn) {
+      setError('Please select at least one way you would like to use TaskMate.');
       return;
     }
     setError(null);
-    setLoading(true);
-    await fetch('/api/auth/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        step: 4,
-        name: name.trim(),
-        bio: bio.trim(),
-        skills: selectedSkills,
-      }),
-    });
-    setLoading(false);
     setCurrentStep(4);
   };
 
-  // Submit Step 4 (Verification or Skip)
-  const handleFinishOnboarding = async (skipVerification: boolean = false) => {
+  // Complete Onboarding (Save permanently to DB)
+  const handleCompleteOnboarding = async () => {
     setLoading(true);
     setError(null);
-
-    const body: any = {
-      complete: true,
-    };
-
-    if (!skipVerification && collegeEmail) {
-      body.college_email = collegeEmail;
-    }
-
-    const res = await fetch('/api/auth/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const data = await res.json();
-    setLoading(false);
-
-    if (data.success) {
-      setVerificationSuccess(true);
-      setTimeout(() => {
+    try {
+      const res = await fetch('/api/auth/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          state_id: selectedState,
+          city_id: selectedCity,
+          college_id: selectedCollege,
+          campus_id: selectedCampus,
+          name: name.trim(),
+          bio: bio.trim(),
+          skills: selectedSkills,
+          complete: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
         router.push('/dashboard');
-      }, 1200);
-    } else {
-      setError(data.error || 'Failed to complete profile.');
+      } else {
+        setError(data.error || 'Failed to save onboarding');
+        setLoading(false);
+      }
+    } catch {
+      setError('Connection error. Please try again.');
+      setLoading(false);
     }
   };
-
-  // Submit College Addition Request
-  const handleRequestCollegeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCollegeName) return;
-
-    await fetch('/api/college-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        college_name: newCollegeName,
-        city_id: selectedCity,
-        website: newCollegeWebsite,
-        message: newCollegeMessage,
-      }),
-    });
-
-    setRequestSent(true);
-    setTimeout(() => {
-      setRequestSent(false);
-      setRequestModalOpen(false);
-      setNewCollegeName('');
-    }, 1800);
-  };
-
-  // Filtered colleges by search query
-  const filteredColleges = colleges.filter((c) =>
-    c.name.toLowerCase().includes(collegeSearch.toLowerCase()) ||
-    c.short_name?.toLowerCase().includes(collegeSearch.toLowerCase())
-  );
 
   const selectedCollegeObj = colleges.find((c) => c.id === selectedCollege);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-      {/* Progress Steps Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <BrutalBadge variant="yellow" size="sm">
-            SETUP YOUR CAMPUS ACCOUNT
-          </BrutalBadge>
-          <span className="text-xs font-black uppercase text-taskBlack/60">
-            Step {currentStep} of 4
-          </span>
-        </div>
-
-        {/* 4-Step Progress Track */}
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { num: '01', title: 'LOCATION' },
-            { num: '02', title: 'COLLEGE' },
-            { num: '03', title: 'PROFILE' },
-            { num: '04', title: 'VERIFY' },
-          ].map((s, idx) => {
-            const stepNum = idx + 1;
-            const isCompleted = stepNum < currentStep;
-            const isCurrent = stepNum === currentStep;
-
-            return (
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-2xl bg-white brutal-border brutal-shadow-lg p-6 sm:p-10 space-y-6">
+        {/* Progress Tracker (4 Steps) */}
+        <div className="border-b-2 border-black/10 pb-4">
+          <div className="flex items-center justify-between text-xs font-black uppercase text-taskBlack mb-2">
+            <span>Student Onboarding</span>
+            <span>Step {currentStep} of 4</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map((stepNum) => (
               <div
-                key={s.num}
+                key={stepNum}
                 className={clsx(
-                  'brutal-border p-2 text-center transition-all',
-                  isCompleted && 'bg-taskGreen/40',
-                  isCurrent && 'bg-taskYellow brutal-shadow font-black',
-                  stepNum > currentStep && 'bg-white opacity-50'
+                  'h-2 brutal-border transition-all',
+                  stepNum <= currentStep ? 'bg-taskYellow' : 'bg-taskOffWhite'
                 )}
-              >
-                <span className="text-[10px] block font-mono font-black">{s.num}</span>
-                <span className="text-xs font-black uppercase tracking-tight block truncate">
-                  {s.title}
-                </span>
-              </div>
-            );
-          })}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Main Card Container */}
-      <div className="bg-white brutal-border brutal-shadow-lg p-6 md:p-8">
         {error && (
-          <div className="mb-5 brutal-border bg-taskPink/30 p-3 text-xs font-black text-red-700">
-            ⚠️ {error}
+          <div className="brutal-border bg-taskPink/30 p-3 text-xs font-black text-red-700 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
-        {/* STEP 1: LOCATION */}
+        {/* STEP 1: "Where do you study?" */}
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
+              <span className="sticker-tag bg-taskYellow px-2 py-0.5 text-xs font-black uppercase inline-block mb-1">
+                LOCATION
+              </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                Where are you studying?
+                Where do you study?
               </h2>
-              <p className="text-xs font-bold text-taskBlack/70 mt-1">
-                TaskMate is campus-first. Select your state and city to find your college marketplace.
+              <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
+                TaskMate is strictly hyperlocal. Tasks are shown only to students in your area.
               </p>
             </div>
 
             <div className="space-y-4">
+              {/* State Dropdown */}
               <div>
-                <label className="block text-xs font-black uppercase mb-1">
-                  Select State
-                </label>
+                <label className="block text-xs font-black uppercase mb-1">State</label>
                 <select
                   value={selectedState}
                   onChange={(e) => handleStateChange(e.target.value)}
-                  className="w-full brutal-input px-3.5 py-2.5 text-sm font-bold bg-white"
+                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
                 >
-                  <option value="">-- Choose State --</option>
-                  {states.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name}
+                  <option value="">Select State</option>
+                  {states.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
                     </option>
                   ))}
                 </select>
               </div>
 
+              {/* City Dropdown */}
               <div>
-                <label className="block text-xs font-black uppercase mb-1">
-                  Select City
-                </label>
+                <label className="block text-xs font-black uppercase mb-1">City</label>
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full brutal-input px-3.5 py-2.5 text-sm font-bold bg-white"
                   disabled={!selectedState}
+                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
                 >
-                  <option value="">-- Choose City --</option>
-                  {cities.map((ct) => (
-                    <option key={ct.id} value={ct.id}>
-                      {ct.name}
+                  <option value="">Select City</option>
+                  {cities.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] font-semibold text-taskBlack/60 mt-1">
-                  Only colleges belonging to this city will be queried dynamically from the database.
-                </p>
               </div>
-            </div>
 
-            <div className="pt-4 flex justify-end">
-              <BrutalButton
-                variant="yellow"
-                size="lg"
-                onClick={handleStep1Next}
-                disabled={loading || !selectedCity}
-              >
-                <span>NEXT: SELECT COLLEGE</span>
-                <ArrowRight className="w-4 h-4 stroke-[3]" />
-              </BrutalButton>
-            </div>
-          </div>
-        )}
+              {/* College Dropdown */}
+              <div>
+                <label className="block text-xs font-black uppercase mb-1">College / University</label>
+                <select
+                  value={selectedCollege}
+                  onChange={(e) => setSelectedCollege(e.target.value)}
+                  disabled={!selectedCity}
+                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
+                >
+                  <option value="">Select College</option>
+                  {colleges.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.short_name || 'Campus'})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {/* STEP 2: COLLEGE */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                What&apos;s your college?
-              </h2>
-              <p className="text-xs font-bold text-taskBlack/70 mt-1">
-                Showing colleges in {cities.find((c) => c.id === selectedCity)?.name || 'your city'}.
-              </p>
-            </div>
-
-            {/* Search colleges */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="🔍 Search college name or acronym (e.g. SNIST, CBIT)..."
-                value={collegeSearch}
-                onChange={(e) => setCollegeSearch(e.target.value)}
-                className="w-full brutal-input px-4 py-2.5 text-sm font-bold"
-              />
-            </div>
-
-            {/* List of colleges */}
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-              {filteredColleges.length === 0 ? (
-                <div className="p-6 brutal-border bg-taskOffWhite text-center">
-                  <p className="text-sm font-black uppercase text-taskBlack">
-                    No colleges match your search.
-                  </p>
-                  <p className="text-xs text-taskBlack/70 mt-1">
-                    Don&apos;t see your college? Request us to add it below!
-                  </p>
+              {/* Campus Dropdown */}
+              {campuses.length > 0 && (
+                <div>
+                  <label className="block text-xs font-black uppercase mb-1">Campus</label>
+                  <select
+                    value={selectedCampus}
+                    onChange={(e) => setSelectedCampus(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
+                  >
+                    {campuses.map((cam) => (
+                      <option key={cam.id} value={cam.id}>
+                        {cam.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              ) : (
-                filteredColleges.map((college) => {
-                  const isSelected = selectedCollege === college.id;
-                  return (
-                    <div
-                      key={college.id}
-                      onClick={() => setSelectedCollege(college.id)}
-                      className={clsx(
-                        'brutal-border p-3 cursor-pointer flex items-center justify-between transition-all',
-                        isSelected
-                          ? 'bg-taskYellow brutal-shadow-sm font-black'
-                          : 'bg-white hover:bg-taskOffWhite'
-                      )}
-                    >
-                      <div className="pr-3">
-                        <p className="text-sm font-black text-taskBlack">
-                          {college.name}
-                        </p>
-                        <p className="text-[11px] text-taskBlack/70 font-semibold truncate mt-0.5">
-                          {college.address}
-                        </p>
-                      </div>
-
-                      <div
-                        className={clsx(
-                          'w-6 h-6 brutal-border flex items-center justify-center shrink-0',
-                          isSelected ? 'bg-black text-white' : 'bg-white'
-                        )}
-                      >
-                        {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
-                      </div>
-                    </div>
-                  );
-                })
               )}
             </div>
 
-            {/* Don't see your college CTA */}
-            <div className="p-3 brutal-border bg-taskBlue/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase text-taskBlack">
-                  Don&apos;t see your college listed?
-                </p>
-                <p className="text-[11px] font-semibold text-taskBlack/70">
-                  Submit a request and campus admin will approve it.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setRequestModalOpen(true)}
-                className="brutal-btn bg-white hover:bg-taskYellow px-3 py-1.5 text-xs font-black uppercase flex items-center gap-1 shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                <span>+ REQUEST TO ADD MY COLLEGE</span>
-              </button>
-            </div>
-
-            <div className="pt-4 flex items-center justify-between">
-              <BrutalButton
-                variant="white"
-                size="md"
-                onClick={() => setCurrentStep(1)}
-              >
-                <ArrowLeft className="w-4 h-4 stroke-[3]" />
-                <span>BACK</span>
-              </BrutalButton>
-
-              <BrutalButton
-                variant="yellow"
-                size="lg"
-                onClick={handleStep2Next}
-                disabled={loading || !selectedCollege}
-              >
-                <span>NEXT: PROFILE</span>
-                <ArrowRight className="w-4 h-4 stroke-[3]" />
+            <div className="pt-2 flex justify-end">
+              <BrutalButton variant="yellow" size="lg" onClick={handleNextFromStep1}>
+                <span>CONTINUE TO PROFILE →</span>
               </BrutalButton>
             </div>
           </div>
         )}
 
-        {/* STEP 3: PROFILE */}
-        {currentStep === 3 && (
+        {/* STEP 2: "Tell us about yourself" */}
+        {currentStep === 2 && (
           <div className="space-y-6">
             <div>
+              <span className="sticker-tag bg-taskBlue px-2 py-0.5 text-xs font-black uppercase inline-block mb-1">
+                PROFILE
+              </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                Set up your student profile
+                Tell us about yourself
               </h2>
-              <p className="text-xs font-bold text-taskBlack/70 mt-1">
-                Tell other students who you are and what skills you can offer on campus.
+              <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
+                Your campus peers will see this profile when you post or apply for tasks.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-black uppercase mb-1">
-                  Full Name *
-                </label>
+                <label className="block text-xs font-black uppercase mb-1">Full Name</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Purii Rao, Rohit Sharma..."
+                  placeholder="e.g. Priya Reddy"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full brutal-input px-3.5 py-2.5 text-sm font-bold"
+                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase mb-1">
-                  Short Bio / Major (Optional)
-                </label>
+                <label className="block text-xs font-black uppercase mb-1">Short Bio</label>
                 <textarea
                   rows={2}
-                  placeholder="e.g. 3rd year ECE student. Fast at diagrams, circuit schematics, and lab notebook records."
+                  placeholder="e.g. 3rd year CSE student. Neat handwriting and quick with PPT design."
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full brutal-input px-3.5 py-2 text-sm font-bold"
+                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold resize-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-black uppercase mb-2">
-                  Select Your Skills (Optional)
+                  Skills you can help with
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {availableSkills.map((sk) => {
-                    const isSelected = selectedSkills.includes(sk);
+                  {availableSkills.map((skill) => {
+                    const active = selectedSkills.includes(skill);
                     return (
                       <button
                         type="button"
-                        key={sk}
-                        onClick={() => toggleSkill(sk)}
+                        key={skill}
+                        onClick={() => toggleSkill(skill)}
                         className={clsx(
-                          'brutal-btn text-xs py-1 px-2.5 transition-all',
-                          isSelected
-                            ? 'bg-taskYellow border-black brutal-shadow-sm font-black'
-                            : 'bg-white hover:bg-taskOffWhite opacity-80'
+                          'px-3 py-1.5 text-xs font-black uppercase brutal-border transition-all',
+                          active
+                            ? 'bg-taskYellow brutal-shadow-sm'
+                            : 'bg-white text-black/70 hover:bg-taskOffWhite'
                         )}
                       >
-                        {isSelected ? '✓ ' : '+ '} {sk}
+                        {active ? '✓ ' : '+ '}
+                        {skill}
                       </button>
                     );
                   })}
@@ -548,173 +404,155 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <div className="pt-4 flex items-center justify-between">
-              <BrutalButton
-                variant="white"
-                size="md"
-                onClick={() => setCurrentStep(2)}
+            <div className="pt-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="text-xs font-black uppercase text-taskBlack underline hover:text-black/60 flex items-center gap-1"
               >
-                <ArrowLeft className="w-4 h-4 stroke-[3]" />
-                <span>BACK</span>
-              </BrutalButton>
-
-              <BrutalButton
-                variant="yellow"
-                size="lg"
-                onClick={handleStep3Next}
-                disabled={loading || !name.trim()}
-              >
-                <span>NEXT: VERIFICATION</span>
-                <ArrowRight className="w-4 h-4 stroke-[3]" />
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </button>
+              <BrutalButton variant="yellow" size="lg" onClick={handleNextFromStep2}>
+                <span>CONTINUE TO INTENT →</span>
               </BrutalButton>
             </div>
           </div>
         )}
 
-        {/* STEP 4: COLLEGE VERIFICATION */}
-        {currentStep === 4 && (
+        {/* STEP 3: "How do you want to use TaskMate?" */}
+        {currentStep === 3 && (
           <div className="space-y-6">
             <div>
-              <BrutalBadge variant="green" size="sm" className="mb-2">
-                CAMPUS COMMUNITY
-              </BrutalBadge>
+              <span className="sticker-tag bg-taskPink px-2 py-0.5 text-xs font-black uppercase inline-block mb-1">
+                PREFERENCES
+              </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                Want to become a verified student?
+                How do you want to use TaskMate?
               </h2>
-              <p className="text-xs font-bold text-taskBlack/70 mt-1">
-                Verification helps other students know that you&apos;re part of this campus community.
+              <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
+                You can select both options and switch anytime.
               </p>
             </div>
 
-            {verificationSuccess ? (
-              <div className="p-6 brutal-border bg-taskGreen/30 text-center space-y-2">
-                <Check className="w-10 h-10 text-green-700 stroke-[3] mx-auto animate-bounce" />
-                <h3 className="text-xl font-black uppercase text-taskBlack">
-                  ✓ COLLEGE VERIFIED!
-                </h3>
-                <p className="text-xs font-bold text-taskBlack/80">
-                  Welcome to TaskMate! Redirecting to your campus dashboard...
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Option 1: I Need Help */}
+              <div
+                onClick={() => setNeedHelp(!needHelp)}
+                className={clsx(
+                  'p-5 brutal-border cursor-pointer transition-all space-y-2 select-none',
+                  needHelp
+                    ? 'bg-taskYellow/40 brutal-shadow'
+                    : 'bg-white hover:bg-taskOffWhite opacity-80'
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">🙋</span>
+                  <div
+                    className={clsx(
+                      'w-5 h-5 brutal-border flex items-center justify-center',
+                      needHelp ? 'bg-taskBlack text-white' : 'bg-white'
+                    )}
+                  >
+                    {needHelp && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </div>
+                </div>
+                <h3 className="font-black text-sm uppercase text-taskBlack">I Need Help</h3>
+                <p className="text-xs font-bold text-black/70 leading-relaxed">
+                  I want to post tasks and get help with records, notes, charts, printing, and errands.
                 </p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 brutal-border bg-taskOffWhite space-y-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-taskBlack stroke-[2.5]" />
-                    <span className="text-xs font-black uppercase text-taskBlack">
-                      Official College Email Verification
-                    </span>
+
+              {/* Option 2: I Want to Earn */}
+              <div
+                onClick={() => setWantToEarn(!wantToEarn)}
+                className={clsx(
+                  'p-5 brutal-border cursor-pointer transition-all space-y-2 select-none',
+                  wantToEarn
+                    ? 'bg-taskGreen/40 brutal-shadow'
+                    : 'bg-white hover:bg-taskOffWhite opacity-80'
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">💼</span>
+                  <div
+                    className={clsx(
+                      'w-5 h-5 brutal-border flex items-center justify-center',
+                      wantToEarn ? 'bg-taskBlack text-white' : 'bg-white'
+                    )}
+                  >
+                    {wantToEarn && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   </div>
-                  <p className="text-xs text-taskBlack/70 font-semibold">
-                    Enter your official college email address ({selectedCollegeObj?.email_domain ? `@${selectedCollegeObj.email_domain}` : 'institutional domain'}).
-                  </p>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase mb-1">
-                    College Email Address
-                  </label>
-                  <input
-                    type="email"
-                    placeholder={`e.g. yourname@${selectedCollegeObj?.email_domain || 'college.edu.in'}`}
-                    value={collegeEmail}
-                    onChange={(e) => setCollegeEmail(e.target.value)}
-                    className="w-full brutal-input px-3.5 py-2.5 text-sm font-bold"
-                  />
-                </div>
-
-                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleFinishOnboarding(true)}
-                    className="text-xs font-black uppercase underline hover:text-black/60 text-center py-2"
-                  >
-                    Skip for now (Continue as unverified)
-                  </button>
-
-                  <BrutalButton
-                    variant="yellow"
-                    size="lg"
-                    onClick={() => handleFinishOnboarding(false)}
-                    disabled={loading || !collegeEmail}
-                  >
-                    <span>VERIFY COLLEGE &amp; ENTER →</span>
-                  </BrutalButton>
-                </div>
+                <h3 className="font-black text-sm uppercase text-taskBlack">I Want to Earn</h3>
+                <p className="text-xs font-bold text-black/70 leading-relaxed">
+                  I want to complete tasks for peers in my free time and earn money on campus.
+                </p>
               </div>
-            )}
+            </div>
+
+            <div className="pt-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(2)}
+                className="text-xs font-black uppercase text-taskBlack underline hover:text-black/60 flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </button>
+              <BrutalButton variant="yellow" size="lg" onClick={handleNextFromStep3}>
+                <span>REVIEW & FINISH →</span>
+              </BrutalButton>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: "You're ready." */}
+        {currentStep === 4 && (
+          <div className="space-y-6 text-center py-4">
+            <div className="w-16 h-16 bg-taskYellow brutal-border brutal-shadow mx-auto flex items-center justify-center text-3xl">
+              🎓
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-3xl font-black uppercase text-taskBlack">
+                You&apos;re ready.
+              </h2>
+              <p className="text-xs sm:text-sm font-bold text-black/60 max-w-md mx-auto">
+                Welcome to TaskMate. Your campus marketplace profile has been configured.
+              </p>
+            </div>
+
+            {/* Profile Confirmation Card */}
+            <div className="brutal-border bg-taskOffWhite p-4 max-w-md mx-auto text-left space-y-2">
+              <div className="flex items-center justify-between border-b-2 border-black/10 pb-2">
+                <span className="font-black text-sm text-taskBlack">{name}</span>
+                <span className="bg-taskYellow px-2 py-0.5 text-[10px] font-black brutal-border">
+                  STUDENT
+                </span>
+              </div>
+              <p className="text-xs font-bold text-black/70">
+                📍 {selectedCollegeObj?.name || 'Selected Campus'}
+              </p>
+              <p className="text-[11px] font-bold text-black/60">
+                Mode: {needHelp && wantToEarn ? 'Requester & Earner' : needHelp ? 'Requester' : 'Earner'}
+              </p>
+            </div>
+
+            <div className="pt-4 flex flex-col items-center gap-2">
+              <BrutalButton
+                variant="yellow"
+                size="xl"
+                disabled={loading}
+                onClick={handleCompleteOnboarding}
+                className="w-full max-w-md"
+              >
+                <span>{loading ? 'SETTING UP...' : 'GO TO TASKMATE →'}</span>
+              </BrutalButton>
+            </div>
           </div>
         )}
       </div>
-
-      {/* College Request Modal */}
-      <BrutalModal
-        isOpen={requestModalOpen}
-        onClose={() => setRequestModalOpen(false)}
-        title="REQUEST TO ADD YOUR COLLEGE"
-      >
-        {requestSent ? (
-          <div className="text-center py-6 space-y-2">
-            <Check className="w-8 h-8 text-green-600 stroke-[3] mx-auto" />
-            <h4 className="font-black text-base uppercase text-taskBlack">
-              Request Submitted to Admin!
-            </h4>
-            <p className="text-xs text-taskBlack/70 font-semibold">
-              Our campus moderator will review and approve your college shortly.
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={handleRequestCollegeSubmit} className="space-y-3">
-            <div>
-              <label className="block text-xs font-black uppercase mb-1">College Name *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Malla Reddy Engineering College"
-                value={newCollegeName}
-                onChange={(e) => setNewCollegeName(e.target.value)}
-                className="w-full brutal-input px-3 py-2 text-xs font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase mb-1">Official Website (Optional)</label>
-              <input
-                type="url"
-                placeholder="https://collegename.ac.in"
-                value={newCollegeWebsite}
-                onChange={(e) => setNewCollegeWebsite(e.target.value)}
-                className="w-full brutal-input px-3 py-2 text-xs font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase mb-1">Reason / Student Community Message</label>
-              <textarea
-                rows={2}
-                placeholder="Tell us about the student demand on your campus..."
-                value={newCollegeMessage}
-                onChange={(e) => setNewCollegeMessage(e.target.value)}
-                className="w-full brutal-input px-3 py-2 text-xs font-bold"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2">
-              <BrutalButton
-                type="button"
-                variant="white"
-                size="sm"
-                onClick={() => setRequestModalOpen(false)}
-              >
-                CANCEL
-              </BrutalButton>
-              <BrutalButton type="submit" variant="yellow" size="sm">
-                SUBMIT REQUEST →
-              </BrutalButton>
-            </div>
-          </form>
-        )}
-      </BrutalModal>
     </div>
   );
 }

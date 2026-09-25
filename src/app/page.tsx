@@ -17,19 +17,16 @@ import {
   ShieldCheck,
   CheckCircle,
   MapPin,
-  TrendingUp,
+  Clock,
   Sparkles,
-  Lock,
-  Key,
-  HelpCircle,
-  School,
-  ExternalLink,
+  Check,
+  AlignLeft,
+  Search,
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { TaskCard } from '@/components/TaskCard';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
-import { HomeHeroLogin } from '@/components/HomeHeroLogin';
 import { db } from '@/lib/db';
 
 export default function HomePage() {
@@ -38,60 +35,30 @@ export default function HomePage() {
   const categories = db.getCategories();
   const colleges = db.getColleges();
 
-  const completedCount = 128 + allTasks.filter((t) => t.status === 'COMPLETED').length;
-  const activeCampusesCount = colleges.filter((c) => c.active).length;
-
   return (
     <div className="w-full">
-      {/* Pilot Announcement Banner */}
-      <div className="bg-taskYellow border-b-[3px] border-black py-2.5 px-4 text-center text-xs font-black uppercase tracking-wide flex items-center justify-center gap-2 flex-wrap">
-        <span className="bg-black text-white text-[10px] px-1.5 py-0.5 font-mono">HYDERABAD PILOT</span>
-        <span>SNIST · CBIT · VNR VJIET · GRIET · Vasavi — 100% Escrow & 4-Digit Handover OTP Active</span>
-      </div>
-
-      {/* Hero Section with Integrated Login & Details Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-          {/* Left: Headline & Marketplace Overview */}
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 pb-12 md:pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Left Column: Heading & Value Prop */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2">
+            <div className="inline-block">
               <span className="sticker-tag bg-white text-taskBlack px-3 py-1 text-xs font-black brutal-border">
-                🎓 HYPERLOCAL CAMPUS MARKETPLACE
-              </span>
-              <span className="hidden sm:inline-block sticker-tag bg-taskGreen text-black px-2 py-0.5 text-[11px] font-black">
-                LIVE IN TELANGANA
+                CAMPUS TASKS, MADE SIMPLE
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-taskBlack leading-[1.02]">
-              Got a task? <br />
+            <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-taskBlack leading-[1.05]">
+              Need something done on campus? <br />
               <span className="bg-taskYellow px-2 brutal-border inline-block mt-1">
-                Someone on campus
-              </span>{' '}
-              can do it.
+                Someone nearby can help.
+              </span>
             </h1>
 
             <p className="text-base sm:text-lg font-bold text-taskBlack/80 max-w-xl leading-relaxed">
-              TaskMate connects college students for legitimate campus services — from handwritten notes and lab records to diagrams, PPTs, and printing runs.
+              Post small tasks, find students around you, and get things done without leaving campus.
             </p>
 
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-3 gap-3 pt-1 max-w-lg">
-              <div className="brutal-border bg-white p-3 brutal-shadow-sm">
-                <span className="text-2xl font-black text-taskBlack block leading-none">15+</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">Categories</span>
-              </div>
-              <div className="brutal-border bg-white p-3 brutal-shadow-sm">
-                <span className="text-2xl font-black text-taskGreen block leading-none">₹0</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">Commission</span>
-              </div>
-              <div className="brutal-border bg-white p-3 brutal-shadow-sm">
-                <span className="text-2xl font-black text-taskBlue block leading-none">100%</span>
-                <span className="text-[10px] font-bold text-black/60 uppercase">OTP Escrow</span>
-              </div>
-            </div>
-
-            {/* Action CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <Link href="/tasks/create">
                 <BrutalButton variant="yellow" size="lg" className="w-full sm:w-auto">
@@ -102,79 +69,83 @@ export default function HomePage() {
 
               <Link href="/tasks">
                 <BrutalButton variant="white" size="lg" className="w-full sm:w-auto">
-                  <span>BROWSE CAMPUS TASKS →</span>
+                  <span>FIND TASKS →</span>
                 </BrutalButton>
               </Link>
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-bold text-black/60 pt-1">
-              <MapPin className="w-3.5 h-3.5 text-black" />
-              <span>Campus-first peer network · Verified student handovers at library & canteen</span>
-            </div>
-          </div>
-
-          {/* Right: Direct Student Login & Profile Details Section */}
-          <div className="lg:col-span-5">
-            <HomeHeroLogin />
-          </div>
-        </div>
-      </section>
-
-      {/* Login Details & Credentials Reference Banner */}
-      <section className="bg-taskOffWhite border-y-[3px] border-black py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white brutal-border brutal-shadow p-6 md:p-8 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-black/10 pb-4">
-              <div>
-                <span className="sticker-tag bg-taskYellow px-2.5 py-0.5 text-xs font-black uppercase inline-block mb-1">
-                  🔑 LOGIN DETAILS & DEMO CREDENTIALS
-                </span>
-                <h3 className="text-xl md:text-2xl font-black uppercase text-taskBlack">
-                  How Student Login Works on TaskMate
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 text-xs font-black text-taskGreen">
-                <CheckCircle className="w-4 h-4 stroke-[2.5]" />
-                <span>Zero-friction passwordless authentication</span>
-              </div>
-            </div>
-
-            <p className="text-xs sm:text-sm font-bold text-black/75 max-w-3xl leading-relaxed">
-              TaskMate supports direct sign-in for any student email or Google account. You can use your own college address, or click any of the 3 pre-configured testing profiles in the login box above:
+            <p className="text-xs font-bold text-black/60 pt-1">
+              Built for students. Designed for campus life.
             </p>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-              <div className="brutal-border bg-taskYellow/20 p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-xs uppercase text-taskBlack">1. Requester Account</span>
-                  <span className="bg-white px-2 py-0.5 text-[10px] font-black brutal-border">Posts Tasks</span>
+          {/* Right Column: Hero Visual (Student, Task Card, Campus, Earning & Completion OTP) */}
+          <div className="lg:col-span-5">
+            <div className="bg-white brutal-border brutal-shadow-lg p-6 space-y-4 relative">
+              {/* Student Header & Campus Indicator */}
+              <div className="flex items-center justify-between border-b-2 border-black/10 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-taskYellow brutal-border flex items-center justify-center font-black text-sm">
+                    PR
+                  </div>
+                  <div>
+                    <h4 className="font-black text-xs uppercase text-taskBlack">Priya Reddy</h4>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-black/60">
+                      <MapPin className="w-3 h-3 text-taskBlack" />
+                      <span>SNIST · Main Campus</span>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs font-mono font-bold text-taskBlack">rohit.ece@sreenidhi.edu.in</p>
-                <p className="text-[11px] font-bold text-black/60">
-                  Role: Student needing lab record writing, diagrams & PPT slides.
-                </p>
+
+                <span className="sticker-tag bg-taskGreen text-black text-[10px] font-black px-2 py-0.5">
+                  ONLINE NEAR YOU
+                </span>
               </div>
 
-              <div className="brutal-border bg-taskPink/20 p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-xs uppercase text-taskBlack">2. Earner / Top Worker</span>
-                  <span className="bg-white px-2 py-0.5 text-[10px] font-black brutal-border">Earns Money</span>
+              {/* Task Card Body */}
+              <div className="brutal-border bg-taskOffWhite p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <BrutalBadge variant="yellow" size="sm">
+                    RECORD WRITING
+                  </BrutalBadge>
+                  <span className="font-black text-xs text-red-600 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Due Tomorrow · 5:00 PM</span>
+                  </span>
                 </div>
-                <p className="text-xs font-mono font-bold text-taskBlack">priya.cse@sreenidhi.edu.in</p>
-                <p className="text-[11px] font-bold text-black/60">
-                  Role: 4.9⭐ student worker with neat handwriting, completed 27 tasks.
-                </p>
+
+                <div>
+                  <h3 className="font-black text-sm uppercase text-taskBlack leading-snug">
+                    Physics Lab Record · 35 Pages Neat Handwriting
+                  </h3>
+                  <p className="text-[11px] font-bold text-black/60 mt-0.5">
+                    Provided manual photocopy; neat blue ink required.
+                  </p>
+                </div>
+
+                {/* Money / Earning Indicator & Handover OTP */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="bg-white p-2 brutal-border">
+                    <span className="text-[10px] uppercase font-bold text-black/60 block">Earning</span>
+                    <span className="text-base font-black text-taskGreen">₹350 Paid</span>
+                  </div>
+
+                  <div className="bg-taskYellow p-2 brutal-border">
+                    <span className="text-[10px] uppercase font-bold text-black/70 block">Handover OTP</span>
+                    <span className="text-base font-mono font-black text-taskBlack tracking-wider">
+                      4827
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="brutal-border bg-taskBlue/20 p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-xs uppercase text-taskBlack">3. Campus Administrator</span>
-                  <span className="bg-white px-2 py-0.5 text-[10px] font-black brutal-border">Moderator</span>
+              {/* Completion Indicator */}
+              <div className="bg-taskGreen/20 brutal-border p-2.5 flex items-center justify-between text-xs font-black text-taskBlack">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-green-700 stroke-[3]" />
+                  <span>Handover Verified & Completed</span>
                 </div>
-                <p className="text-xs font-mono font-bold text-taskBlack">admin@taskmate.campus</p>
-                <p className="text-[11px] font-bold text-black/60">
-                  Role: Campus admin who resolves disputes and verifies college ID cards.
-                </p>
+                <span className="text-[10px] uppercase text-black/60 font-mono">0.8 km away</span>
               </div>
             </div>
           </div>
@@ -182,57 +153,116 @@ export default function HomePage() {
       </section>
 
       {/* Categories Grid (15 Legitimate Student Categories) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="inline-block mb-1">
-              <span className="sticker-tag bg-taskPink text-taskBlack px-2.5 py-0.5 text-xs font-black">
-                POPULAR ON CAMPUS
-              </span>
+      <section className="bg-white border-y-[3px] border-black py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <div className="inline-block mb-1">
+                <span className="sticker-tag bg-taskPink text-taskBlack px-2.5 py-0.5 text-xs font-black">
+                  POPULAR ON CAMPUS
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-taskBlack">
+                Legitimate Campus Services
+              </h2>
+              <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
+                Strictly legitimate assistance: handwriting, transcription, formatting, diagrams, and campus errands.
+              </p>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-taskBlack">
-              Legitimate Campus Services
-            </h2>
-            <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
-              Strictly non-cheating assistance: handwriting, transcription, formatting, diagrams, and campus errands.
-            </p>
+
+            <Link href="/tasks" className="text-xs font-black uppercase underline hover:text-blue-700 shrink-0">
+              View all tasks →
+            </Link>
           </div>
 
-          <Link href="/tasks" className="text-xs font-black uppercase underline hover:text-blue-700 shrink-0">
-            View all 15 categories →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-          {categories.slice(0, 10).map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/tasks?category=${cat.id}`}
-              className="brutal-border bg-white p-4 brutal-shadow-sm brutal-card-hover flex flex-col justify-between group transition-all"
-            >
-              <div>
-                <div
-                  className="w-10 h-10 brutal-border flex items-center justify-center mb-3 group-hover:scale-105 transition-transform"
-                  style={{ backgroundColor: cat.bgColor || '#FFD84D' }}
-                >
-                  <BookOpen className="w-5 h-5 text-black stroke-[2.5]" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+            {categories.slice(0, 10).map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/tasks?category=${cat.id}`}
+                className="brutal-border bg-taskOffWhite p-4 brutal-shadow-sm brutal-card-hover flex flex-col justify-between group transition-all"
+              >
+                <div>
+                  <div
+                    className="w-10 h-10 brutal-border flex items-center justify-center mb-3 group-hover:scale-105 transition-transform"
+                    style={{ backgroundColor: cat.bgColor || '#FFD84D' }}
+                  >
+                    <BookOpen className="w-5 h-5 text-black stroke-[2.5]" />
+                  </div>
+                  <h3 className="font-black text-sm text-taskBlack uppercase leading-tight mb-1">
+                    {cat.name}
+                  </h3>
+                  <p className="text-[11px] text-taskBlack/70 font-bold line-clamp-2">
+                    {cat.description}
+                  </p>
                 </div>
-                <h3 className="font-black text-sm text-taskBlack uppercase leading-tight mb-1">
-                  {cat.name}
-                </h3>
-                <p className="text-[11px] text-taskBlack/70 font-bold line-clamp-2">
-                  {cat.description}
-                </p>
-              </div>
-              <span className="text-[10px] font-black uppercase text-taskBlack/50 group-hover:text-black mt-3 block">
-                Explore tasks →
-              </span>
-            </Link>
-          ))}
+                <span className="text-[10px] font-black uppercase text-taskBlack/50 group-hover:text-black mt-3 block">
+                  Find tasks →
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Live Campus Tasks Feed */}
+      {/* How It Works (4 Clean Steps) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="sticker-tag bg-taskBlue text-taskBlack px-3 py-1 text-xs font-black inline-block mb-2">
+            SIMPLE & SECURE
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-taskBlack">
+            How TaskMate Works
+          </h2>
+          <p className="text-xs sm:text-sm font-bold text-black/70 mt-1">
+            Peer-to-peer campus services with 4-digit handover verification.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="brutal-border bg-white p-5 brutal-shadow space-y-2">
+            <span className="w-8 h-8 rounded-full bg-taskYellow brutal-border font-black text-sm flex items-center justify-center">
+              1
+            </span>
+            <h3 className="font-black text-base uppercase text-taskBlack">Post a Task</h3>
+            <p className="text-xs font-bold text-black/70 leading-relaxed">
+              Describe your task, specify number of pages or requirements, set your budget, and choose a campus deadline.
+            </p>
+          </div>
+
+          <div className="brutal-border bg-white p-5 brutal-shadow space-y-2">
+            <span className="w-8 h-8 rounded-full bg-taskBlue brutal-border font-black text-sm flex items-center justify-center">
+              2
+            </span>
+            <h3 className="font-black text-base uppercase text-taskBlack">Choose a Student</h3>
+            <p className="text-xs font-bold text-black/70 leading-relaxed">
+              Review proposals from verified students on your campus. Accept the best fit and secure task payment.
+            </p>
+          </div>
+
+          <div className="brutal-border bg-white p-5 brutal-shadow space-y-2">
+            <span className="w-8 h-8 rounded-full bg-taskPink brutal-border font-black text-sm flex items-center justify-center">
+              3
+            </span>
+            <h3 className="font-black text-base uppercase text-taskBlack">Campus Handover</h3>
+            <p className="text-xs font-bold text-black/70 leading-relaxed">
+              Meet at your campus library or canteen. Inspect the work, then share your secret 4-digit OTP code.
+            </p>
+          </div>
+
+          <div className="brutal-border bg-white p-5 brutal-shadow space-y-2">
+            <span className="w-8 h-8 rounded-full bg-taskGreen brutal-border font-black text-sm flex items-center justify-center">
+              4
+            </span>
+            <h3 className="font-black text-base uppercase text-taskBlack">Instant Release</h3>
+            <p className="text-xs font-bold text-black/70 leading-relaxed">
+              Entering the OTP confirms successful physical handover and releases payment directly to the student earner.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Real Live Campus Tasks Feed */}
       <section className="bg-white border-y-[3px] border-black py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -240,131 +270,58 @@ export default function HomePage() {
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2.5 h-2.5 rounded-full bg-taskGreen animate-pulse border border-black" />
                 <span className="text-xs font-black uppercase tracking-wider text-taskGreen">
-                  LIVE CAMPUS FEED
+                  CAMPUS TASKS NEAR YOU
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-taskBlack">
-                Latest Tasks Near You
+                Latest Available Tasks
               </h2>
-              <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
-                Accept open tasks, assist peers, and get paid with 4-digit OTP handover security.
-              </p>
             </div>
 
             <Link href="/tasks">
               <BrutalButton variant="yellow" size="sm">
-                <span>VIEW ALL TASKS ({allTasks.length})</span>
+                <span>VIEW ALL TASKS</span>
                 <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
               </BrutalButton>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredTasks.map((task, idx) => {
-              const cat = categories.find((c) => c.id === task.category_id);
-              const col = colleges.find((c) => c.id === task.college_id);
-              const variants: ('yellow' | 'blue' | 'pink' | 'white')[] = ['yellow', 'white', 'blue', 'pink', 'white', 'yellow'];
-              return (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  categoryName={cat?.name}
-                  collegeName={col?.short_name || 'SNIST'}
-                  variant={variants[idx % variants.length]}
-                />
-              );
-            })}
-          </div>
+          {featuredTasks.length === 0 ? (
+            <div className="brutal-border bg-taskOffWhite p-12 text-center space-y-3">
+              <h3 className="text-lg font-black uppercase text-taskBlack">No tasks nearby yet</h3>
+              <p className="text-xs font-bold text-black/60">
+                Be the first to post a task on your campus.
+              </p>
+              <Link href="/tasks/create">
+                <BrutalButton variant="yellow" size="md">
+                  <span>POST THE FIRST TASK</span>
+                </BrutalButton>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredTasks.map((task, idx) => {
+                const cat = categories.find((c) => c.id === task.category_id);
+                const col = colleges.find((c) => c.id === task.college_id);
+                const variants: ('yellow' | 'blue' | 'pink' | 'white')[] = ['white', 'yellow', 'white', 'blue', 'white', 'pink'];
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    categoryName={cat?.name}
+                    collegeName={col?.short_name || 'Campus'}
+                    variant={variants[idx % variants.length]}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* How It Works (The 4-Step Campus Lifecycle) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="sticker-tag bg-taskBlue text-taskBlack px-3 py-1 text-xs font-black inline-block mb-2">
-            SAFE · HYPERLOCAL · TRANSPARENT
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-taskBlack">
-            How TaskMate Works
-          </h2>
-          <p className="text-sm font-bold text-black/70 mt-2">
-            Designed specifically for college campuses with escrow protection and in-person OTP handovers.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Step 1 */}
-          <div className="brutal-border bg-white p-6 brutal-shadow space-y-3 relative">
-            <span className="w-8 h-8 rounded-full bg-taskYellow brutal-border font-black text-sm flex items-center justify-center">
-              1
-            </span>
-            <h3 className="font-black text-lg uppercase text-taskBlack">Post a Task</h3>
-            <p className="text-xs font-bold text-black/70 leading-relaxed">
-              Describe what you need help with (record writing, chart drawing, printing), set your budget and campus deadline.
-            </p>
-          </div>
-
-          {/* Step 2 */}
-          <div className="brutal-border bg-white p-6 brutal-shadow space-y-3 relative">
-            <span className="w-8 h-8 rounded-full bg-taskBlue brutal-border font-black text-sm flex items-center justify-center">
-              2
-            </span>
-            <h3 className="font-black text-lg uppercase text-taskBlack">Escrow Lock</h3>
-            <p className="text-xs font-bold text-black/70 leading-relaxed">
-              Choose an applicant student. Funds are held safely in TaskMate vault — the worker is guaranteed payment upon delivery.
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="brutal-border bg-white p-6 brutal-shadow space-y-3 relative">
-            <span className="w-8 h-8 rounded-full bg-taskPink brutal-border font-black text-sm flex items-center justify-center">
-              3
-            </span>
-            <h3 className="font-black text-lg uppercase text-taskBlack">Campus Handover</h3>
-            <p className="text-xs font-bold text-black/70 leading-relaxed">
-              Meet at your campus library or canteen. Inspect the physical work, then provide the secret 4-digit OTP to the worker.
-            </p>
-          </div>
-
-          {/* Step 4 */}
-          <div className="brutal-border bg-white p-6 brutal-shadow space-y-3 relative">
-            <span className="w-8 h-8 rounded-full bg-taskGreen brutal-border font-black text-sm flex items-center justify-center">
-              4
-            </span>
-            <h3 className="font-black text-lg uppercase text-taskBlack">Instant Payout</h3>
-            <p className="text-xs font-bold text-black/70 leading-relaxed">
-              OTP verification unlocks funds immediately into the worker&apos;s available student balance with ₹0 commission during pilot.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Academic Integrity Pledge */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+      {/* Academic Integrity & Safety Notice */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <AcademicIntegrityBanner />
-      </section>
-
-      {/* Campus Coverage & Expansion Footer */}
-      <section className="bg-taskYellow border-t-[3px] border-black py-10 px-4 text-center">
-        <div className="max-w-3xl mx-auto space-y-4">
-          <span className="bg-black text-white text-xs font-black uppercase px-2.5 py-1 inline-block">
-            CAMPUS EXPANSION
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-            Want TaskMate at Your College?
-          </h2>
-          <p className="text-xs sm:text-sm font-bold text-black/80 max-w-xl mx-auto">
-            Currently active at SNIST, CBIT, VNR VJIET, GRIET, and Vasavi. Students from other colleges can request immediate pilot onboarding.
-          </p>
-          <div className="pt-2 flex justify-center gap-3">
-            <Link href="/onboarding">
-              <BrutalButton variant="white" size="md">
-                <span>REQUEST YOUR COLLEGE</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </BrutalButton>
-            </Link>
-          </div>
-        </div>
       </section>
     </div>
   );

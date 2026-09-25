@@ -374,12 +374,12 @@ export default function OrderDetailPage() {
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 stroke-[3]" />
               <h3 className="text-xl sm:text-2xl font-black uppercase text-taskBlack">
-                SECURE YOUR TASK
+                TASK PAYMENT
               </h3>
             </div>
 
             <p className="text-xs sm:text-sm font-bold text-taskBlack/80 leading-relaxed max-w-xl">
-              To activate this job, lock your payment in the TaskMate campus vault. Your payment is secured and will NOT be released to the worker until you verify the secret handover OTP on campus!
+              Review the order total below. Once you continue to payment, the funds are held securely until you inspect the work in person on campus.
             </p>
 
             <div className="bg-white brutal-border p-4 max-w-md space-y-2 text-xs font-black">
@@ -388,11 +388,11 @@ export default function OrderDetailPage() {
                 <span>₹{order.amount}</span>
               </div>
               <div className="flex justify-between text-black/70">
-                <span>Platform Safety Fee:</span>
+                <span>Platform Fee:</span>
                 <span>₹{order.platform_fee}</span>
               </div>
               <div className="flex justify-between pt-2 border-t-2 border-black text-sm">
-                <span>Total Amount:</span>
+                <span>Total:</span>
                 <span>₹{order.total_amount}</span>
               </div>
             </div>
@@ -405,11 +405,8 @@ export default function OrderDetailPage() {
                 onClick={handleSimulatePayment}
               >
                 <CreditCard className="w-5 h-5 stroke-[2.5]" />
-                <span>PAY &amp; START TASK →</span>
+                <span>CONTINUE TO PAYMENT →</span>
               </BrutalButton>
-              <p className="text-[11px] font-bold text-black/60 mt-1">
-                * Simulated Prototype Payment — No real debit card or bank API required.
-              </p>
             </div>
           </div>
         )}
@@ -420,7 +417,7 @@ export default function OrderDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <BrutalBadge variant="blue" size="sm" className="mb-1">
-                  PAYMENT HELD IN VAULT 🔒
+                  PAYMENT SECURED
                 </BrutalBadge>
                 <h3 className="text-xl sm:text-2xl font-black uppercase text-taskBlack">
                   Work In Progress

@@ -11,9 +11,9 @@ export const BottomNav: React.FC = () => {
 
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
-    { label: 'Tasks', href: '/tasks', icon: Search },
+    { label: 'Browse', href: '/tasks', icon: Search },
     { label: 'Post', href: '/tasks/create', icon: PlusCircle, highlight: true },
-    { label: 'Orders', href: '/orders', icon: PackageCheck },
+    { label: 'Activity', href: '/orders', icon: PackageCheck },
     { label: 'Profile', href: '/profile', icon: User },
   ];
 

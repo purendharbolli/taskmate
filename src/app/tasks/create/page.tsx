@@ -42,21 +42,14 @@ export default function CreateTaskPage() {
   // Step 2: Add Material
   const [uploadedFiles, setUploadedFiles] = useState<
     { file_name: string; file_size: string; file_type: string; file_url: string }[]
-  >([
-    {
-      file_name: 'lab_manual_experiment_3.pdf',
-      file_size: '2.4 MB',
-      file_type: 'application/pdf',
-      file_url: '/demo-files/manual.pdf',
-    },
-  ]);
+  >([]);
   const [newFileName, setNewFileName] = useState('');
 
   // Step 3: Requirements
-  const [quantity, setQuantity] = useState('30 pages');
+  const [quantity, setQuantity] = useState('');
   const [deadline, setDeadline] = useState('Tomorrow · 5:00 PM');
-  const [location, setLocation] = useState('SNIST · Block C Electronics Lab');
-  const [budget, setBudget] = useState<number>(350);
+  const [location, setLocation] = useState('Campus Library / Canteen');
+  const [budget, setBudget] = useState<number>(300);
 
   // Step 4: Handover
   const [handoverMethod, setHandoverMethod] = useState<'Campus meeting point' | 'Self-arranged delivery' | 'Other'>('Campus meeting point');

@@ -3,11 +3,10 @@ import { db } from './db';
 import { User, UserRole } from './types';
 
 const SESSION_COOKIE_NAME = 'taskmate_user_id';
-const DEFAULT_FALLBACK_USER_ID = 'usr-rohit-1'; // Default logged in student for smooth demo exploration
 
 export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = cookies();
-  const userId = cookieStore.get(SESSION_COOKIE_NAME)?.value || DEFAULT_FALLBACK_USER_ID;
+  const userId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (!userId) return null;
   const user = db.getUserById(userId);

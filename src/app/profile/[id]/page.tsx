@@ -108,7 +108,7 @@ export default function PublicProfilePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="brutal-border bg-taskYellow/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              ★ {user.rating || 4.8}
+              ★ {user.rating ? user.rating.toFixed(1) : '5.0'}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
               Rating
@@ -117,7 +117,7 @@ export default function PublicProfilePage() {
 
           <div className="brutal-border bg-taskBlue/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              {user.completed_tasks || 23}
+              {user.completed_tasks || 0}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
               Tasks Completed
@@ -126,7 +126,7 @@ export default function PublicProfilePage() {
 
           <div className="brutal-border bg-taskGreen/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              ₹{user.earnings_total || 4250}
+              ₹{user.earnings_total || 0}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
               Earned on Campus
@@ -135,7 +135,7 @@ export default function PublicProfilePage() {
 
           <div className="brutal-border bg-taskPink/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              {user.completion_rate || 96}%
+              {user.completion_rate ? `${user.completion_rate}%` : '100%'}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
               Completion Rate

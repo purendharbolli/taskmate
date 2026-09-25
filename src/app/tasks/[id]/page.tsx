@@ -11,19 +11,21 @@ import {
   Star,
   CheckCircle,
   Download,
-  Send,
   AlertCircle,
-  Share2,
+  Bookmark,
+  Flag,
+  User,
   ShieldCheck,
-  Check
+  Check,
+  ChevronDown
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
-import { BrutalCard } from '@/components/ui/BrutalCard';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
-import { Task, TaskFile, Application, User, College } from '@/lib/types';
+import { Task, TaskFile, Application, User as UserType, College } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
+import clsx from 'clsx';
 
 export default function TaskDetailPage() {
   const params = useParams();
@@ -33,23 +35,29 @@ export default function TaskDetailPage() {
   const [data, setData] = useState<{
     task: Task;
     files: TaskFile[];
-    requester?: User;
+    requester?: UserType;
     category?: any;
     applications: Application[];
     college?: College;
   } | null>(null);
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   // Application Modal State
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [proposedPrice, setProposedPrice] = useState<number>(350);
-  const [completionTime, setCompletionTime] = useState('Tomorrow by 4:00 PM');
-  const [applyMessage, setApplyMessage] = useState('I can complete this accurately and neatly.');
+  const [completionTime, setCompletionTime] = useState('Tomorrow by 5:00 PM');
+  const [applyMessage, setApplyMessage] = useState('I can complete this neatly and deliver on campus.');
   const [applying, setApplying] = useState(false);
-  const [applySuccess, setApplySuccess] = useState(false);
+
+  // Report Modal State
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('Academic integrity concern');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportSuccess, setReportSuccess] = useState(false);
 
   // Accept Applicant State
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -67,7 +75,7 @@ export default function TaskDetailPage() {
         }
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setError('Failed to load task details');
         setLoading(false);
       });
@@ -82,9 +90,13 @@ export default function TaskDetailPage() {
       });
   }, [taskId]);
 
-  // Handle Worker Submitting Application
+  // Worker Application Submit
   const handleSendApplication = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      router.push('/login');
+      return;
+    }
     setApplying(true);
     setError(null);
 
@@ -103,22 +115,18 @@ export default function TaskDetailPage() {
       setApplying(false);
 
       if (resData.success) {
-        setApplySuccess(true);
-        setTimeout(() => {
-          setApplySuccess(false);
-          setApplyModalOpen(false);
-          fetchTaskDetails();
-        }, 1500);
+        setApplyModalOpen(false);
+        fetchTaskDetails();
       } else {
-        setError(resData.error || 'Failed to submit application.');
+        alert(resData.error || 'Failed to submit application');
       }
-    } catch (err: any) {
-      setError('Network failure.');
+    } catch {
+      alert('Network failure');
       setApplying(false);
     }
   };
 
-  // Handle Requester Accepting an Applicant
+  // Requester Accepts an Applicant
   const handleAcceptApplicant = async (applicationId: string) => {
     setAcceptingId(applicationId);
     try {
@@ -127,39 +135,48 @@ export default function TaskDetailPage() {
       });
       const resData = await res.json();
       if (resData.success) {
-        // Redirect directly to the generated order page to lock payment!
         router.push(`/orders/${resData.order.id}`);
       } else {
         alert(resData.error || 'Failed to accept applicant');
       }
-    } catch (err) {
+    } catch {
       alert('Error accepting applicant');
     } finally {
       setAcceptingId(null);
     }
   };
 
+  // Submit Report
+  const handleSubmitReport = (e: React.FormEvent) => {
+    e.preventDefault();
+    setReportSuccess(true);
+    setTimeout(() => {
+      setReportModalOpen(false);
+      setReportSuccess(false);
+    }, 1500);
+  };
+
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="w-12 h-12 brutal-border bg-taskYellow animate-spin mx-auto mb-4" />
-        <p className="font-black uppercase text-sm">Loading task details...</p>
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+        <div className="w-10 h-10 brutal-border bg-taskYellow animate-spin mx-auto mb-3" />
+        <p className="font-black uppercase text-xs">Loading task details...</p>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <div className="brutal-border bg-white brutal-shadow-lg p-8 space-y-4">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto stroke-[2.5]" />
-          <h2 className="text-2xl font-black uppercase">Task Not Found</h2>
-          <p className="text-xs font-bold text-black/70">
-            {error || 'This task may have been removed or completed.'}
+      <div className="max-w-md mx-auto px-4 py-20 text-center">
+        <div className="brutal-border bg-white brutal-shadow p-8 space-y-4">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+          <h2 className="text-xl font-black uppercase">Task Not Found</h2>
+          <p className="text-xs font-bold text-black/60">
+            {error || 'This task may have been closed or removed.'}
           </p>
           <Link href="/tasks">
             <BrutalButton variant="yellow" size="md">
-              <span>← BROWSE OTHER TASKS</span>
+              <span>BACK TO TASKS</span>
             </BrutalButton>
           </Link>
         </div>
@@ -172,31 +189,36 @@ export default function TaskDetailPage() {
   const alreadyApplied = applications.some((a) => a.worker_id === currentUser?.id);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-      {/* Back button & Breadcrumb */}
-      <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
+      {/* Breadcrumb & Actions */}
+      <div className="flex items-center justify-between">
         <Link
           href="/tasks"
           className="inline-flex items-center gap-1.5 text-xs font-black uppercase hover:underline"
         >
           <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          <span>Back to All Tasks</span>
+          <span>Back to Tasks</span>
         </Link>
 
-        <span className="text-[11px] font-mono font-bold text-black/50 uppercase">
-          TASK ID: #{task.id}
-        </span>
+        {/* Small Report Menu */}
+        <button
+          onClick={() => setReportModalOpen(true)}
+          className="text-xs font-bold text-black/50 hover:text-red-600 flex items-center gap-1 transition-colors"
+        >
+          <Flag className="w-3.5 h-3.5" />
+          <span>Report Task</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Main Content (Left Column) */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white brutal-border brutal-shadow-lg p-6 md:p-8 space-y-6">
-            {/* Header Badges */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-black pb-4">
+          <div className="bg-white brutal-border brutal-shadow-lg p-6 sm:p-8 space-y-6">
+            {/* Top Badge & Price */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black/10 pb-4">
               <div className="flex items-center gap-2">
                 <BrutalBadge variant="yellow" size="md">
-                  {category?.name || 'Academic Help'}
+                  {category?.name || 'Campus Task'}
                 </BrutalBadge>
                 {task.status === 'OPEN' ? (
                   <BrutalBadge variant="green" size="sm">
@@ -209,13 +231,12 @@ export default function TaskDetailPage() {
                 )}
               </div>
 
-              {/* Price Tag */}
               <div className="bg-taskYellow px-3.5 py-1 brutal-border brutal-shadow-sm font-black text-2xl text-taskBlack">
                 ₹{task.budget}
               </div>
             </div>
 
-            {/* Task Title */}
+            {/* Task Title & Relative Time */}
             <div>
               <h1 className="text-2xl sm:text-4xl font-black uppercase text-taskBlack leading-tight">
                 {task.title}
@@ -225,54 +246,59 @@ export default function TaskDetailPage() {
               </p>
             </div>
 
-            {/* Key Specifications Grid */}
+            {/* Structured Specifications Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-bold">
               <div className="brutal-border bg-taskOffWhite p-3">
-                <span className="text-[10px] text-black/60 uppercase block font-semibold mb-0.5">
-                  Quantity
+                <span className="text-[10px] text-black/60 uppercase block font-bold mb-0.5">
+                  Quantity / Pages
                 </span>
-                <span className="text-sm font-black">{task.quantity || 'Standard'}</span>
+                <span className="text-taskBlack font-black">{task.quantity || 'Standard'}</span>
               </div>
 
               <div className="brutal-border bg-taskOffWhite p-3">
-                <span className="text-[10px] text-black/60 uppercase block font-semibold mb-0.5">
+                <span className="text-[10px] text-black/60 uppercase block font-bold mb-0.5">
                   Deadline
                 </span>
-                <span className="text-sm font-black text-red-600">{task.deadline}</span>
+                <span className="text-red-600 font-black flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{task.deadline}</span>
+                </span>
               </div>
 
               <div className="brutal-border bg-taskOffWhite p-3">
-                <span className="text-[10px] text-black/60 uppercase block font-semibold mb-0.5">
-                  Location
+                <span className="text-[10px] text-black/60 uppercase block font-bold mb-0.5">
+                  Campus
                 </span>
-                <span className="text-sm font-black truncate block">{task.location}</span>
+                <span className="text-taskBlack font-black truncate block">
+                  {college?.short_name || 'SNIST'}
+                </span>
               </div>
 
               <div className="brutal-border bg-taskOffWhite p-3">
-                <span className="text-[10px] text-black/60 uppercase block font-semibold mb-0.5">
-                  Handover
+                <span className="text-[10px] text-black/60 uppercase block font-bold mb-0.5">
+                  Handover Mode
                 </span>
-                <span className="text-sm font-black truncate block">{task.handover_method}</span>
+                <span className="text-taskBlack font-black">Library / Canteen</span>
               </div>
             </div>
 
-            {/* Description */}
+            {/* Description / What Needs to Be Done */}
             <div>
               <h3 className="text-xs font-black uppercase tracking-wider text-black/60 mb-2">
-                Task Description
+                What Needs to Be Done
               </h3>
-              <div className="p-4 brutal-border bg-taskOffWhite text-sm font-bold text-taskBlack leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm font-bold text-taskBlack/85 leading-relaxed whitespace-pre-wrap brutal-border bg-taskOffWhite p-4">
                 {task.description}
-              </div>
+              </p>
             </div>
 
-            {/* Uploaded Material / Reference Files */}
+            {/* Attachments */}
             <div>
               <h3 className="text-xs font-black uppercase tracking-wider text-black/60 mb-2">
                 Attached Reference Material ({files.length})
               </h3>
               {files.length === 0 ? (
-                <p className="text-xs text-black/60 italic">No files attached to this task.</p>
+                <p className="text-xs text-black/50 italic">No reference files attached.</p>
               ) : (
                 <div className="space-y-2">
                   {files.map((file) => (
@@ -311,8 +337,8 @@ export default function TaskDetailPage() {
             <AcademicIntegrityBanner />
           </div>
 
-          {/* Requester View: Show All Applicants Section */}
-          {applications.length > 0 && (
+          {/* Requester View: Student Applicants List */}
+          {isRequester && applications.length > 0 && (
             <div className="bg-white brutal-border brutal-shadow-lg p-6 space-y-4">
               <div className="flex items-center justify-between border-b-2 border-black pb-2">
                 <h3 className="text-lg font-black uppercase text-taskBlack">
@@ -324,60 +350,63 @@ export default function TaskDetailPage() {
               </div>
 
               <div className="space-y-3">
-                {applications.map((app) => (
-                  <div
-                    key={app.id}
-                    className="brutal-border p-4 bg-taskOffWhite flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-black text-sm uppercase text-taskBlack">
-                          {(app as any).worker?.name || 'Student Worker'}
-                        </span>
-                        <span className="flex items-center text-xs font-black text-taskBlack">
-                          ★ {(app as any).worker?.rating || 4.8}
-                        </span>
-                        <BrutalBadge variant="green" size="sm">
-                          VERIFIED
-                        </BrutalBadge>
+                {applications.map((app) => {
+                  const workerUser = (app as any).worker;
+                  return (
+                    <div
+                      key={app.id}
+                      className="brutal-border p-4 bg-taskOffWhite flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-black text-sm uppercase text-taskBlack">
+                            {workerUser?.name || 'Student Worker'}
+                          </span>
+                          <span className="flex items-center text-xs font-black text-taskBlack">
+                            ★ {workerUser?.rating || 5.0}
+                          </span>
+                          <span className="text-xs font-bold text-black/60">
+                            · {workerUser?.completed_tasks || 0} tasks done
+                          </span>
+                        </div>
+
+                        <p className="text-xs font-bold text-black/80 italic mb-2">
+                          &quot;{app.message}&quot;
+                        </p>
+
+                        <div className="flex items-center gap-3 text-xs font-bold text-black/60">
+                          <span>ETA: {app.completion_time}</span>
+                          <span>·</span>
+                          <span className="text-black font-black">Offer: ₹{app.proposed_price}</span>
+                        </div>
                       </div>
 
-                      <p className="text-xs font-bold text-black/80 italic mb-2">
-                        &quot;{app.message}&quot;
-                      </p>
-
-                      <div className="flex items-center gap-3 text-xs font-bold text-black/60">
-                        <span>ETA: {app.completion_time}</span>
-                        <span>·</span>
-                        <span className="text-black font-black">Offer: ₹{app.proposed_price}</span>
+                      <div className="shrink-0 flex items-center gap-2">
+                        {task.status === 'OPEN' && (
+                          <BrutalButton
+                            variant="yellow"
+                            size="md"
+                            disabled={acceptingId === app.id}
+                            onClick={() => handleAcceptApplicant(app.id)}
+                          >
+                            <span>{acceptingId === app.id ? 'ACCEPTING...' : 'ACCEPT →'}</span>
+                          </BrutalButton>
+                        )}
+                        {app.status === 'ACCEPTED' && (
+                          <BrutalBadge variant="green" size="md">
+                            ✓ ACCEPTED
+                          </BrutalBadge>
+                        )}
                       </div>
                     </div>
-
-                    <div className="shrink-0 flex items-center gap-2">
-                      {task.status === 'OPEN' && (
-                        <BrutalButton
-                          variant="yellow"
-                          size="md"
-                          disabled={acceptingId === app.id}
-                          onClick={() => handleAcceptApplicant(app.id)}
-                        >
-                          <span>{acceptingId === app.id ? 'ACCEPTING...' : 'ACCEPT WORKER →'}</span>
-                        </BrutalButton>
-                      )}
-                      {app.status === 'ACCEPTED' && (
-                        <BrutalBadge variant="green" size="md">
-                          ✓ ACCEPTED
-                        </BrutalBadge>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
         </div>
 
-        {/* Sidebar Info & Action (Right Column) */}
+        {/* Sidebar Info & CTAs (Right Column) */}
         <div className="lg:col-span-4 space-y-6">
           {/* Main Action Card */}
           <div className="bg-taskYellow brutal-border brutal-shadow-lg p-6 space-y-4">
@@ -391,34 +420,45 @@ export default function TaskDetailPage() {
             </div>
 
             <p className="text-xs font-bold text-taskBlack/80 leading-relaxed">
-              Payment will be secured in the TaskMate vault and released only when you complete the task and verify the 4-digit handover OTP on campus.
+              Task payment is held securely and released to you upon in-person campus handover verified by 4-digit OTP.
             </p>
 
             {isRequester ? (
               <div className="p-3 brutal-border bg-white text-center text-xs font-black uppercase">
-                You posted this task. Review applicants on the left.
+                You posted this task. Review applications below.
               </div>
             ) : alreadyApplied ? (
               <div className="p-3 brutal-border bg-taskGreen/40 text-center text-xs font-black uppercase">
-                ✓ You have already applied for this task!
+                ✓ Application Sent! Awaiting Requester Approval.
               </div>
             ) : task.status !== 'OPEN' ? (
               <div className="p-3 brutal-border bg-white text-center text-xs font-black uppercase opacity-75">
-                This task has been assigned or closed.
+                This task has been assigned or completed.
               </div>
             ) : (
-              <BrutalButton
-                variant="white"
-                fullWidth
-                size="xl"
-                onClick={() => setApplyModalOpen(true)}
-              >
-                <span>I CAN DO THIS →</span>
-              </BrutalButton>
+              <div className="space-y-2">
+                <BrutalButton
+                  variant="white"
+                  fullWidth
+                  size="xl"
+                  onClick={() => setApplyModalOpen(true)}
+                >
+                  <span>I CAN DO THIS →</span>
+                </BrutalButton>
+
+                <button
+                  type="button"
+                  onClick={() => setSaved(!saved)}
+                  className="w-full brutal-btn bg-taskOffWhite hover:bg-white py-2 text-xs font-black uppercase flex items-center justify-center gap-1.5"
+                >
+                  <Bookmark className={clsx('w-3.5 h-3.5', saved && 'fill-black')} />
+                  <span>{saved ? 'TASK SAVED' : 'SAVE TASK'}</span>
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Requester Profile Card */}
+          {/* Requester Information Card */}
           <div className="bg-white brutal-border brutal-shadow p-5 space-y-3">
             <span className="text-[10px] font-black uppercase tracking-wider text-black/50 block">
               POSTED BY
@@ -428,113 +468,140 @@ export default function TaskDetailPage() {
               <div className="w-12 h-12 brutal-border bg-taskYellow flex items-center justify-center font-black text-lg">
                 {requester?.name?.charAt(0) || 'S'}
               </div>
-              <div>
-                <h4 className="font-black text-base uppercase text-taskBlack">
+              <div className="truncate">
+                <h4 className="font-black text-base uppercase text-taskBlack truncate">
                   {requester?.name || 'Student Requester'}
                 </h4>
                 <div className="flex items-center gap-2 text-xs font-bold text-black/70">
                   <span className="flex items-center text-black font-black">
-                    ★ {requester?.rating || 4.8}
+                    ★ {requester?.rating?.toFixed(1) || '5.0'}
                   </span>
                   <span>·</span>
-                  <span>{requester?.completed_tasks || 18} tasks</span>
+                  <span>{requester?.completed_tasks || 0} tasks completed</span>
                 </div>
               </div>
             </div>
 
             <div className="pt-2 border-t-2 border-black/10 text-xs font-semibold text-black/80 space-y-1">
-              <p>📍 {college?.name || 'SNIST Hyderabad'}</p>
-              <p>🎓 Verified Student Identity</p>
+              <p>📍 {college?.name || 'Campus'}</p>
+              <p>🤝 In-person campus delivery only</p>
             </div>
-
-            <Link href={`/profile/${requester?.id || 'usr-rohit-1'}`} className="block w-full">
-              <button className="w-full text-center text-xs font-black uppercase underline hover:text-blue-700 py-1">
-                View Student Profile →
-              </button>
-            </Link>
           </div>
         </div>
       </div>
 
-      {/* Application Modal ("I CAN DO THIS") */}
+      {/* Application Form Modal (Section 12) */}
       <BrutalModal
         isOpen={applyModalOpen}
         onClose={() => setApplyModalOpen(false)}
-        title="APPLY FOR THIS TASK"
+        title="Apply for this Task"
       >
-        {applySuccess ? (
-          <div className="text-center py-6 space-y-2">
-            <Check className="w-10 h-10 text-green-600 stroke-[3] mx-auto animate-bounce" />
-            <h4 className="font-black text-base uppercase">Application Submitted!</h4>
-            <p className="text-xs font-bold text-black/70">
-              The requester will be notified to review and accept your offer.
+        <form onSubmit={handleSendApplication} className="space-y-4">
+          <div>
+            <label className="block text-xs font-black uppercase text-taskBlack mb-1">
+              Your Proposed Price (₹)
+            </label>
+            <input
+              type="number"
+              min="50"
+              max="5000"
+              required
+              value={proposedPrice}
+              onChange={(e) => setProposedPrice(Number(e.target.value))}
+              className="w-full brutal-input py-2 px-3 text-xs sm:text-sm font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase text-taskBlack mb-1">
+              Estimated Completion Time
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Tomorrow by 4:00 PM"
+              value={completionTime}
+              onChange={(e) => setCompletionTime(e.target.value)}
+              className="w-full brutal-input py-2 px-3 text-xs sm:text-sm font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase text-taskBlack mb-1">
+              Message to Requester
+            </label>
+            <textarea
+              rows={3}
+              required
+              placeholder="Tell them why you're a good fit, your handwriting sample, or tools you'll use..."
+              value={applyMessage}
+              onChange={(e) => setApplyMessage(e.target.value)}
+              className="w-full brutal-input py-2 px-3 text-xs sm:text-sm font-bold resize-none"
+            />
+          </div>
+
+          <div className="pt-2">
+            <BrutalButton
+              type="submit"
+              variant="yellow"
+              fullWidth
+              size="lg"
+              disabled={applying}
+            >
+              <span>{applying ? 'SUBMITTING...' : 'SEND APPLICATION →'}</span>
+            </BrutalButton>
+          </div>
+        </form>
+      </BrutalModal>
+
+      {/* Report Task Modal */}
+      <BrutalModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        title="Report Task"
+      >
+        {reportSuccess ? (
+          <div className="py-6 text-center space-y-2">
+            <CheckCircle className="w-10 h-10 text-taskGreen mx-auto" />
+            <h4 className="font-black text-sm uppercase">Report Submitted</h4>
+            <p className="text-xs font-bold text-black/60">
+              Campus moderators will review this task promptly.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSendApplication} className="space-y-4">
+          <form onSubmit={handleSubmitReport} className="space-y-4">
             <div>
-              <label className="block text-xs font-black uppercase mb-1">
-                Your Proposed Price (₹)
+              <label className="block text-xs font-black uppercase text-taskBlack mb-1">
+                Reason for reporting
               </label>
-              <input
-                type="number"
-                required
-                min="50"
-                value={proposedPrice}
-                onChange={(e) => setProposedPrice(Number(e.target.value))}
-                className="w-full brutal-input px-3.5 py-2 text-sm font-black"
-              />
-              <span className="text-[10px] text-black/60 font-semibold block mt-0.5">
-                Task budget is ₹{task.budget}
-              </span>
+              <select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="w-full brutal-input py-2 px-3 text-xs font-bold"
+              >
+                <option value="Academic integrity concern">Academic integrity / Cheating concern</option>
+                <option value="Inappropriate content">Inappropriate content or spam</option>
+                <option value="Unrealistic requirements">Unrealistic requirements or scam</option>
+                <option value="Other">Other policy violation</option>
+              </select>
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase mb-1">
-                When can you complete it?
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Tomorrow by 4:00 PM"
-                value={completionTime}
-                onChange={(e) => setCompletionTime(e.target.value)}
-                className="w-full brutal-input px-3.5 py-2 text-xs font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase mb-1">
-                Message to Requester
+              <label className="block text-xs font-black uppercase text-taskBlack mb-1">
+                Details (Optional)
               </label>
               <textarea
-                rows={3}
-                required
-                placeholder="e.g. I have neat handwriting and have done 18 similar lab records with A+ grades. Can meet at Block C cafeteria."
-                value={applyMessage}
-                onChange={(e) => setApplyMessage(e.target.value)}
-                className="w-full brutal-input px-3.5 py-2 text-xs font-bold"
+                rows={2}
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Explain the issue..."
+                className="w-full brutal-input py-2 px-3 text-xs font-bold resize-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
-              <BrutalButton
-                type="button"
-                variant="white"
-                size="md"
-                onClick={() => setApplyModalOpen(false)}
-              >
-                CANCEL
-              </BrutalButton>
-              <BrutalButton
-                type="submit"
-                variant="yellow"
-                size="lg"
-                disabled={applying}
-              >
-                <span>{applying ? 'SENDING...' : 'SEND APPLICATION →'}</span>
-              </BrutalButton>
-            </div>
+            <BrutalButton type="submit" variant="pink" fullWidth size="md">
+              <span>SUBMIT REPORT</span>
+            </BrutalButton>
           </form>
         )}
       </BrutalModal>

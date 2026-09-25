@@ -67,7 +67,7 @@ export default function OrdersPage() {
               CAMPUS TRANSACTIONS
             </BrutalBadge>
             <span className="text-xs font-black uppercase text-taskBlack/60">
-              Escrow &amp; OTP Protected
+              Campus Handover &amp; OTP Verification
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-taskBlack">

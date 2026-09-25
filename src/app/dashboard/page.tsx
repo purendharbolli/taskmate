@@ -3,42 +3,63 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  TrendingUp,
-  Wallet,
-  Clock,
-  CheckCircle,
-  Star,
   PlusCircle,
   ArrowRight,
-  Package,
-  Layers,
-  Sparkles,
+  MapPin,
+  Clock,
+  CheckCircle,
+  FileText,
+  Briefcase,
+  AlertCircle,
   Inbox,
-  AlertCircle
+  User,
+  Star,
+  Search,
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
-import { BrutalCard } from '@/components/ui/BrutalCard';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { TaskCard } from '@/components/TaskCard';
-import { User, Task, Order } from '@/lib/types';
+import { User as UserType, Task, Order, Application, College } from '@/lib/types';
 import clsx from 'clsx';
 
 export default function DashboardPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [myTasks, setMyTasks] = useState<Task[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [college, setCollege] = useState<College | null>(null);
   const [recommendedTasks, setRecommendedTasks] = useState<Task[]>([]);
-  const [viewMode, setViewMode] = useState<'worker' | 'requester'>('worker');
+  const [myTasks, setMyTasks] = useState<Task[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Time-of-day greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   useEffect(() => {
-    // Fetch session user
+    // 1. Fetch current session user
     fetch('/api/auth/session')
       .then((res) => res.json())
       .then((data) => {
         if (data.user) {
           setCurrentUser(data.user);
-          // Fetch my tasks posted
+
+          // Fetch user's college details
+          if (data.user.college_id) {
+            fetch(`/api/locations`)
+              .then((r) => r.json())
+              .then((locData) => {
+                if (locData.colleges) {
+                  const col = locData.colleges.find((c: College) => c.id === data.user.college_id);
+                  if (col) setCollege(col);
+                }
+              });
+          }
+
+          // Fetch tasks posted by user
           fetch(`/api/tasks?requesterId=${data.user.id}`)
             .then((r) => r.json())
             .then((tData) => {
@@ -47,365 +68,284 @@ export default function DashboardPage() {
         }
       });
 
-    // Fetch orders
+    // 2. Fetch orders
     fetch('/api/orders')
       .then((res) => res.json())
       .then((data) => {
         if (data.orders) setOrders(data.orders);
       });
 
-    // Fetch recommended open tasks
+    // 3. Fetch recommended open tasks
     fetch('/api/tasks?status=OPEN')
       .then((res) => res.json())
       .then((data) => {
         if (data.tasks) setRecommendedTasks(data.tasks.slice(0, 3));
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  const totalEarned = currentUser?.earnings_total || 2450;
-  const availableBalance = currentUser?.earnings_available || 1820;
-  const pendingEarnings = currentUser?.earnings_pending || 630;
-  const totalSpent = currentUser?.spent_total || 2150;
+  const totalEarned = currentUser?.earnings_total || 0;
+  const completedCount = currentUser?.completed_tasks || 0;
+  const ratingValue = currentUser?.rating || 5.0;
 
-  const activeWorkerJobs = orders.filter(
-    (o) => o.worker_id === currentUser?.id && o.status !== 'PAYMENT_RELEASED' && o.status !== 'REFUNDED'
-  );
-  const activeRequesterOrders = orders.filter(
-    (o) => o.requester_id === currentUser?.id && o.status !== 'PAYMENT_RELEASED' && o.status !== 'REFUNDED'
-  );
+  const activeTasks = myTasks.filter((t) => t.status === 'OPEN' || t.status === 'IN_PROGRESS');
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-      {/* Welcome & Role Switcher */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-10">
+      {/* Header & Greetings */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black/10 pb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <BrutalBadge variant="green" size="sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-taskGreen border border-black animate-pulse" />
+            <span className="text-xs font-black uppercase tracking-wider text-taskBlack/70">
               CAMPUS DASHBOARD
-            </BrutalBadge>
-            <span className="text-xs font-mono font-bold text-black/60 uppercase">
-              SNIST Campus
+            </span>
+            <span className="text-black/30">·</span>
+            <span className="text-xs font-bold text-taskBlack flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-taskBlack" />
+              <span>{college?.name || 'SNIST'} · Main Campus</span>
             </span>
           </div>
+
           <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-taskBlack">
-            Welcome back, {currentUser?.name?.split(' ')[0] || 'Student'}! 👋
+            {getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Student'}!
           </h1>
           <p className="text-xs sm:text-sm font-bold text-taskBlack/70 mt-1">
-            Here&apos;s your campus activity, earnings, and active tasks.
+            Manage your campus tasks, active applications, and student earnings.
           </p>
         </div>
 
-        {/* View Switcher: Worker vs Requester */}
-        <div className="flex items-center gap-2 bg-white brutal-border p-1.5 brutal-shadow-sm self-start md:self-auto">
-          <button
-            onClick={() => setViewMode('worker')}
-            className={clsx(
-              'px-4 py-2 text-xs font-black uppercase transition-all',
-              viewMode === 'worker'
-                ? 'bg-taskYellow brutal-border text-taskBlack shadow-none'
-                : 'hover:bg-taskOffWhite text-black/70'
-            )}
-          >
-            Worker View (Earn)
-          </button>
-          <button
-            onClick={() => setViewMode('requester')}
-            className={clsx(
-              'px-4 py-2 text-xs font-black uppercase transition-all',
-              viewMode === 'requester'
-                ? 'bg-taskBlue brutal-border text-taskBlack shadow-none'
-                : 'hover:bg-taskOffWhite text-black/70'
-            )}
-          >
-            Requester View (Post)
-          </button>
+        {/* Primary Action Buttons */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Link href="/tasks/create">
+            <BrutalButton variant="yellow" size="lg">
+              <PlusCircle className="w-4 h-4 stroke-[3]" />
+              <span>POST A TASK</span>
+            </BrutalButton>
+          </Link>
+
+          <Link href="/tasks">
+            <BrutalButton variant="white" size="lg">
+              <Search className="w-4 h-4 stroke-[3]" />
+              <span>FIND TASKS</span>
+            </BrutalButton>
+          </Link>
         </div>
       </div>
 
-      {/* WORKER DASHBOARD VIEW */}
-      {viewMode === 'worker' && (
-        <div className="space-y-8">
-          {/* Earnings Statistics Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {/* Total Earned */}
-            <div className="bg-taskYellow brutal-border brutal-shadow-lg p-6 flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-black uppercase text-taskBlack/70 tracking-wider">
-                  Total Earned
-                </span>
-                <p className="text-4xl font-black text-taskBlack mt-1">
-                  ₹{totalEarned}
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black/20 text-[11px] font-black uppercase">
-                {currentUser?.completed_tasks || 12} jobs completed
-              </div>
-            </div>
+      {/* Real Worker Metrics (Strictly Real Numbers) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="brutal-border bg-white p-5 brutal-shadow-sm space-y-1">
+          <span className="text-xs font-black uppercase text-taskBlack/60">Total Earned</span>
+          <div className="text-3xl font-black text-taskGreen">₹{totalEarned}</div>
+          <p className="text-[11px] font-bold text-black/50">
+            {totalEarned === 0
+              ? 'Your earnings will appear here after you complete your first task.'
+              : 'Direct student payouts'}
+          </p>
+        </div>
 
-            {/* Available Balance */}
-            <div className="bg-taskGreen/30 brutal-border brutal-shadow-lg p-6 flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-black uppercase text-taskBlack/70 tracking-wider">
-                  Available to Withdraw
-                </span>
-                <p className="text-4xl font-black text-taskBlack mt-1">
-                  ₹{availableBalance}
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black/20 text-[11px] font-black uppercase flex items-center justify-between">
-                <span>Direct UPI Payout</span>
-                <span className="bg-white px-2 py-0.5 brutal-border text-[10px]">READY</span>
-              </div>
-            </div>
+        <div className="brutal-border bg-white p-5 brutal-shadow-sm space-y-1">
+          <span className="text-xs font-black uppercase text-taskBlack/60">Jobs Completed</span>
+          <div className="text-3xl font-black text-taskBlack">{completedCount}</div>
+          <p className="text-[11px] font-bold text-black/50">
+            {completedCount === 0 ? 'No completed tasks yet.' : 'Verified handovers on campus'}
+          </p>
+        </div>
 
-            {/* Pending In Vault */}
-            <div className="bg-taskPink/30 brutal-border brutal-shadow-lg p-6 flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-black uppercase text-taskBlack/70 tracking-wider">
-                  Pending in Escrow Vault
-                </span>
-                <p className="text-4xl font-black text-taskBlack mt-1">
-                  ₹{pendingEarnings}
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black/20 text-[11px] font-black uppercase">
-                Released upon OTP handover
-              </div>
-            </div>
+        <div className="brutal-border bg-white p-5 brutal-shadow-sm space-y-1">
+          <span className="text-xs font-black uppercase text-taskBlack/60">Student Rating</span>
+          <div className="text-3xl font-black text-taskYellow flex items-center gap-1.5">
+            <Star className="w-6 h-6 fill-taskYellow stroke-black stroke-2" />
+            <span className="text-taskBlack">{ratingValue.toFixed(1)}</span>
           </div>
+          <p className="text-[11px] font-bold text-black/50">Based on verified reviews</p>
+        </div>
+      </div>
 
-          {/* Quick Stats Strip */}
-          <div className="bg-white brutal-border brutal-shadow p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs font-black uppercase">
-            <div className="p-2 border-r-2 border-black/10 last:border-none">
-              <span className="text-2xl block text-taskBlack">
-                {currentUser?.completed_tasks || 12}
-              </span>
-              <span className="text-black/60 text-[10px]">Jobs Completed</span>
-            </div>
-            <div className="p-2 border-r-2 border-black/10 last:border-none">
-              <span className="text-2xl block text-taskBlack">18h</span>
-              <span className="text-black/60 text-[10px]">Hours Worked</span>
-            </div>
-            <div className="p-2 border-r-2 border-black/10 last:border-none">
-              <span className="text-2xl block text-taskBlack flex items-center justify-center gap-1">
-                <span>{currentUser?.rating || 4.8}</span>
-                <span className="text-base text-yellow-500">★</span>
-              </span>
-              <span className="text-black/60 text-[10px]">Peer Rating</span>
-            </div>
-            <div className="p-2">
-              <span className="text-2xl block text-taskBlack">
-                {currentUser?.completion_rate || 96}%
-              </span>
-              <span className="text-black/60 text-[10px]">Completion Rate</span>
-            </div>
-          </div>
-
-          {/* My Active Jobs Section */}
+      {/* Section 1: Recommended Near You */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl sm:text-2xl font-black uppercase text-taskBlack">
-                My Active Jobs ({activeWorkerJobs.length})
-              </h2>
-              <Link href="/orders" className="text-xs font-black uppercase underline hover:text-blue-700">
-                View All Orders →
+            <h2 className="text-xl sm:text-2xl font-black uppercase text-taskBlack">
+              Recommended Near You
+            </h2>
+            <p className="text-xs font-bold text-black/60">
+              Tasks posted by students on your campus.
+            </p>
+          </div>
+
+          <Link
+            href="/tasks"
+            className="text-xs font-black uppercase underline hover:text-blue-700 flex items-center gap-1"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
+          </Link>
+        </div>
+
+        {recommendedTasks.length === 0 ? (
+          <div className="brutal-border bg-white p-8 text-center space-y-2">
+            <p className="font-black uppercase text-sm">No tasks nearby yet</p>
+            <p className="text-xs font-bold text-black/60">
+              Be the first to post a task on your campus.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recommendedTasks.map((task, idx) => {
+              const variants: ('white' | 'yellow' | 'blue' | 'pink')[] = [
+                'white',
+                'yellow',
+                'white',
+              ];
+              return (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  variant={variants[idx % variants.length]}
+                  collegeName={college?.short_name || 'SNIST'}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Two Column Layout: Your Active Tasks & Your Applications */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Your Active Tasks */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-black uppercase text-taskBlack">Your Active Tasks</h3>
+            <span className="text-xs font-bold text-black/60">
+              {activeTasks.length} posted
+            </span>
+          </div>
+
+          {activeTasks.length === 0 ? (
+            <div className="brutal-border bg-white p-8 text-center space-y-3">
+              <Inbox className="w-8 h-8 mx-auto text-black/40 stroke-[2]" />
+              <p className="font-black text-sm uppercase text-taskBlack">No active tasks</p>
+              <p className="text-xs font-bold text-black/60 max-w-xs mx-auto">
+                Need help with record writing, diagrams, or errands? Post a task to find peers.
+              </p>
+              <Link href="/tasks/create">
+                <BrutalButton variant="yellow" size="sm">
+                  <span>POST A TASK</span>
+                </BrutalButton>
               </Link>
             </div>
-
-            {activeWorkerJobs.length === 0 ? (
-              <div className="brutal-border bg-white p-8 text-center space-y-2">
-                <CheckCircle className="w-8 h-8 text-green-600 mx-auto" />
-                <p className="font-black text-sm uppercase">No Active Jobs In Progress</p>
-                <p className="text-xs font-bold text-black/60">
-                  Apply for open tasks on campus below to start earning!
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activeWorkerJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="brutal-border bg-white p-4 brutal-shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs font-black bg-taskBlack text-white px-2 py-0.5">
-                          ORDER #{job.id}
-                        </span>
-                        <BrutalBadge variant="yellow" size="sm">
-                          {job.status}
-                        </BrutalBadge>
-                      </div>
-                      <h4 className="font-black text-base uppercase text-taskBlack">
-                        {(job as any).task?.title || 'Campus Task'}
-                      </h4>
-                      <p className="text-xs font-bold text-black/60 mt-0.5">
-                        Amount: ₹{job.amount} · Meeting: {(job as any).task?.location || 'Campus'}
-                      </p>
-                    </div>
-
-                    <Link href={`/orders/${job.id}`}>
-                      <BrutalButton variant="yellow" size="md">
-                        <span>MANAGE / ENTER OTP →</span>
-                      </BrutalButton>
+          ) : (
+            <div className="space-y-3">
+              {activeTasks.map((t) => (
+                <div
+                  key={t.id}
+                  className="brutal-border bg-white p-4 brutal-shadow-sm flex items-center justify-between gap-4"
+                >
+                  <div className="truncate">
+                    <span className="text-[10px] font-mono font-bold bg-taskYellow px-1.5 py-0.2 brutal-border uppercase">
+                      {t.status}
+                    </span>
+                    <h4 className="font-black text-sm text-taskBlack truncate mt-1">{t.title}</h4>
+                    <p className="text-xs font-bold text-black/60">Due {t.deadline}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-base font-black text-taskBlack block">₹{t.budget}</span>
+                    <Link
+                      href={`/tasks/${t.id}`}
+                      className="text-xs font-black uppercase underline hover:text-blue-700"
+                    >
+                      View
                     </Link>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Recommended Campus Tasks */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl sm:text-2xl font-black uppercase text-taskBlack">
-                Recommended Tasks Near You
-              </h2>
-              <Link href="/tasks" className="text-xs font-black uppercase underline hover:text-blue-700">
-                Browse All ({recommendedTasks.length}+) →
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {recommendedTasks.map((t, i) => (
-                <TaskCard
-                  key={t.id}
-                  task={t}
-                  categoryName="Academic Help"
-                  collegeName="SNIST"
-                  variant={i === 0 ? 'yellow' : i === 1 ? 'blue' : 'pink'}
-                />
+                </div>
               ))}
             </div>
-          </div>
+          )}
         </div>
-      )}
 
-      {/* REQUESTER DASHBOARD VIEW */}
-      {viewMode === 'requester' && (
-        <div className="space-y-8">
-          {/* Requester Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="bg-taskBlue/30 brutal-border brutal-shadow p-5">
-              <span className="text-[10px] font-black uppercase text-black/60 block">
-                Tasks Posted
-              </span>
-              <span className="text-3xl font-black text-taskBlack mt-1 block">
-                {myTasks.length || 8}
-              </span>
-              <span className="text-[10px] font-bold text-black/60 mt-1 block">
-                By you on campus
-              </span>
-            </div>
-
-            <div className="bg-taskYellow brutal-border brutal-shadow p-5">
-              <span className="text-[10px] font-black uppercase text-black/60 block">
-                Active Orders
-              </span>
-              <span className="text-3xl font-black text-taskBlack mt-1 block">
-                {activeRequesterOrders.length || 2}
-              </span>
-              <span className="text-[10px] font-bold text-black/60 mt-1 block">
-                In progress / ready
-              </span>
-            </div>
-
-            <div className="bg-taskGreen/30 brutal-border brutal-shadow p-5">
-              <span className="text-[10px] font-black uppercase text-black/60 block">
-                Completed
-              </span>
-              <span className="text-3xl font-black text-taskBlack mt-1 block">
-                5
-              </span>
-              <span className="text-[10px] font-bold text-black/60 mt-1 block">
-                Delivered &amp; verified
-              </span>
-            </div>
-
-            <div className="bg-white brutal-border brutal-shadow p-5">
-              <span className="text-[10px] font-black uppercase text-black/60 block">
-                Total Spent
-              </span>
-              <span className="text-3xl font-black text-taskBlack mt-1 block">
-                ₹{totalSpent}
-              </span>
-              <span className="text-[10px] font-bold text-black/60 mt-1 block">
-                On student peer help
-              </span>
-            </div>
-          </div>
-
-          {/* Quick CTA: Post New Task */}
-          <div className="p-6 bg-taskYellow brutal-border brutal-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-black uppercase text-taskBlack">
-                Need more work done on campus?
-              </h3>
-              <p className="text-xs font-bold text-taskBlack/80 mt-0.5">
-                Post handwriting, record copying, print runs, or presentation design in 60 seconds.
-              </p>
-            </div>
-            <Link href="/tasks/create">
-              <BrutalButton variant="white" size="lg">
-                <PlusCircle className="w-5 h-5 stroke-[2.5]" />
-                <span>POST A TASK NOW</span>
-              </BrutalButton>
+        {/* Your Applications & Active Orders */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-black uppercase text-taskBlack">Active Orders & Handover</h3>
+            <Link
+              href="/orders"
+              className="text-xs font-black uppercase underline hover:text-blue-700"
+            >
+              All Orders ({orders.length})
             </Link>
           </div>
 
-          {/* My Posted Tasks List */}
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black uppercase text-taskBlack mb-4">
-              My Tasks &amp; Applicants
-            </h2>
-
-            {myTasks.length === 0 ? (
-              <div className="brutal-border bg-white p-8 text-center space-y-3">
-                <Inbox className="w-8 h-8 text-black/60 mx-auto" />
-                <p className="font-black text-sm uppercase">You haven&apos;t posted any tasks yet.</p>
-                <Link href="/tasks/create">
-                  <BrutalButton variant="yellow" size="sm">
-                    <span>POST YOUR FIRST TASK</span>
-                  </BrutalButton>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {myTasks.map((t) => (
-                  <div
-                    key={t.id}
-                    className="brutal-border bg-white p-4 brutal-shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <BrutalBadge variant="yellow" size="sm">
-                          ₹{t.budget}
-                        </BrutalBadge>
-                        <BrutalBadge variant={t.status === 'OPEN' ? 'green' : 'pink'} size="sm">
-                          {t.status}
-                        </BrutalBadge>
-                      </div>
-                      <h4 className="font-black text-base uppercase text-taskBlack">
-                        {t.title}
-                      </h4>
-                      <p className="text-xs font-bold text-black/60">
-                        Deadline: {t.deadline} · Location: {t.location}
-                      </p>
-                    </div>
-
-                    <Link href={`/tasks/${t.id}`}>
-                      <BrutalButton variant="white" size="md">
-                        <span>VIEW APPLICANTS →</span>
-                      </BrutalButton>
-                    </Link>
+          {orders.length === 0 ? (
+            <div className="brutal-border bg-white p-8 text-center space-y-3">
+              <Briefcase className="w-8 h-8 mx-auto text-black/40 stroke-[2]" />
+              <p className="font-black text-sm uppercase text-taskBlack">No active orders</p>
+              <p className="text-xs font-bold text-black/60 max-w-xs mx-auto">
+                Once an applicant is accepted, your order lifecycle and handover OTP will appear here.
+              </p>
+              <Link href="/tasks">
+                <BrutalButton variant="white" size="sm">
+                  <span>BROWSE TASKS</span>
+                </BrutalButton>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {orders.slice(0, 3).map((ord) => (
+                <Link
+                  key={ord.id}
+                  href={`/orders/${ord.id}`}
+                  className="brutal-border bg-white p-4 brutal-shadow-sm flex items-center justify-between gap-4 block hover:bg-taskOffWhite transition-all"
+                >
+                  <div className="truncate">
+                    <span className="text-[10px] font-mono font-bold bg-taskBlue px-1.5 py-0.2 brutal-border uppercase">
+                      {ord.status.replace(/_/g, ' ')}
+                    </span>
+                    <h4 className="font-black text-sm text-taskBlack truncate mt-1">
+                      {(ord as any).task?.title || `Order #${ord.id}`}
+                    </h4>
+                    <p className="text-xs font-bold text-black/60">
+                      Amount: ₹{ord.amount} · Campus Handover
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <div className="shrink-0 text-right">
+                    <BrutalButton variant="yellow" size="sm">
+                      <span>OPEN →</span>
+                    </BrutalButton>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Recent Activity */}
+      <div className="space-y-4 pt-4 border-t-2 border-black/10">
+        <h3 className="text-lg font-black uppercase text-taskBlack">Recent Activity</h3>
+        {orders.length === 0 && myTasks.length === 0 ? (
+          <div className="brutal-border bg-white p-8 text-center space-y-1">
+            <p className="font-black uppercase text-sm text-taskBlack">No activity yet</p>
+            <p className="text-xs font-bold text-black/60">
+              Post a task or apply to one to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="brutal-border bg-white p-4 space-y-3">
+            {orders.slice(0, 4).map((o) => (
+              <div key={o.id} className="flex items-center justify-between text-xs font-bold border-b border-black/10 pb-2 last:border-b-0 last:pb-0">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-taskGreen" />
+                  <span>Order #{o.id}: Status changed to {o.status.replace(/_/g, ' ')}</span>
+                </div>
+                <span className="text-[10px] text-black/50">{new Date(o.updated_at).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

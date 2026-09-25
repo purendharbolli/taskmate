@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Check, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Mail, AlertCircle, Sparkles } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
-import { BrutalBadge } from '@/components/ui/BrutalBadge';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function LoginPage() {
       } else {
         setError(data.error || 'Google login failed');
       }
-    } catch (err: any) {
+    } catch {
       setError('Could not connect to authentication service.');
     } finally {
       setLoading(false);
@@ -53,7 +52,7 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: 'email',
-          email,
+          email: email.trim().toLowerCase(),
         }),
       });
       const data = await res.json();
@@ -62,7 +61,7 @@ export default function LoginPage() {
       } else {
         setError(data.error || 'Authentication failed');
       }
-    } catch (err: any) {
+    } catch {
       setError('Network failure. Please try again.');
     } finally {
       setLoading(false);
@@ -70,24 +69,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white brutal-border brutal-shadow-lg p-6 sm:p-8 space-y-6">
-        {/* Header */}
+    <div className="min-h-[82vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white brutal-border brutal-shadow-lg p-6 sm:p-10 space-y-6">
+        {/* Brand Stamp */}
         <div className="text-center space-y-2">
-          <div className="bg-taskYellow brutal-border px-3 py-1 font-black text-xl brutal-shadow-sm inline-block mx-auto mb-1">
+          <div className="bg-taskYellow brutal-border px-3 py-1 font-black text-xl brutal-shadow-sm inline-block mx-auto mb-2">
             TASKMATE
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-taskBlack">
-            Welcome to TaskMate.
+            Welcome to TaskMate
           </h1>
           <p className="text-xs sm:text-sm font-bold text-taskBlack/70">
-            Students helping students. Earn from your free time.
+            Your campus. Your tasks. Your side income.
           </p>
         </div>
 
         {error && (
-          <div className="brutal-border bg-taskPink/30 p-3 text-xs font-black text-red-700">
-            ⚠️ {error}
+          <div className="brutal-border bg-taskPink/30 p-3 text-xs font-black text-red-700 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full brutal-btn bg-white hover:bg-taskOffWhite py-3 px-4 flex items-center justify-center gap-3 text-xs sm:text-sm font-black uppercase"
+          className="w-full brutal-btn bg-white hover:bg-taskOffWhite py-3 px-4 flex items-center justify-center gap-3 text-xs sm:text-sm font-black uppercase transition-all"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path
@@ -128,20 +128,22 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Email Form */}
-        <form onSubmit={handleEmailLogin} className="space-y-3">
+        {/* Email Authentication Form */}
+        <form onSubmit={handleEmailLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-black uppercase text-taskBlack mb-1">
-              Email Address
+            <label className="block text-xs font-black uppercase text-taskBlack mb-1.5">
+              Campus or Personal Email
             </label>
-            <input
-              type="email"
-              required
-              placeholder="name@college.edu.in"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full brutal-input px-3.5 py-2.5 text-xs sm:text-sm font-bold text-taskBlack"
-            />
+            <div className="relative">
+              <input
+                type="email"
+                required
+                placeholder="you@college.edu.in"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full brutal-input px-3.5 py-2.5 text-xs sm:text-sm font-bold text-taskBlack"
+              />
+            </div>
           </div>
 
           <BrutalButton
@@ -151,17 +153,18 @@ export default function LoginPage() {
             size="lg"
             disabled={loading}
           >
-            <span>{loading ? 'VERIFYING...' : 'CONTINUE WITH EMAIL →'}</span>
+            <span>{loading ? 'AUTHENTICATING...' : 'CONTINUE WITH EMAIL →'}</span>
           </BrutalButton>
         </form>
 
-        <p className="text-[11px] text-taskBlack/60 font-semibold text-center">
-          New here? Your account will be created automatically.
+        <p className="text-[11px] text-taskBlack/60 font-bold text-center">
+          First time? Your student profile will be set up automatically.
         </p>
 
-        <div className="pt-2 border-t border-black/10 text-center">
+        {/* Footer Integrity Notice */}
+        <div className="pt-3 border-t border-black/10 text-center space-y-1">
           <p className="text-[10px] text-taskBlack/50 font-semibold leading-relaxed">
-            By continuing, you agree to TaskMate&apos;s Terms and Privacy Policy. Strictly for legitimate campus assistance.
+            By continuing, you agree to TaskMate&apos;s campus guidelines. Strictly for legitimate student assistance.
           </p>
         </div>
       </div>
