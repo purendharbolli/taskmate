@@ -23,6 +23,7 @@ import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
 import { Task, TaskFile, Application, User, College } from '@/lib/types';
+import { formatTimeAgo } from '@/lib/utils';
 
 export default function TaskDetailPage() {
   const params = useParams();
@@ -219,8 +220,8 @@ export default function TaskDetailPage() {
               <h1 className="text-2xl sm:text-4xl font-black uppercase text-taskBlack leading-tight">
                 {task.title}
               </h1>
-              <p className="text-xs font-bold text-black/50 mt-1">
-                Posted {new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {task.view_count || 12} views
+              <p className="text-xs font-bold text-black/50 mt-1 capitalize">
+                {formatTimeAgo(task.created_at)} · {task.view_count || 12} views
               </p>
             </div>
 

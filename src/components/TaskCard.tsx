@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Clock, MapPin, Star, FileText, ArrowRight } from 'lucide-react';
 import { BrutalBadge } from './ui/BrutalBadge';
 import { Task } from '@/lib/types';
+import { formatTimeAgo } from '@/lib/utils';
 
 interface TaskCardProps {
   task: Task;
@@ -31,9 +32,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       <div>
         {/* Top Badges */}
         <div className="flex items-center justify-between gap-2 mb-3">
-          <BrutalBadge variant="yellow" size="sm" className="truncate max-w-[170px]">
-            {categoryName}
-          </BrutalBadge>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <BrutalBadge variant="yellow" size="sm" className="truncate max-w-[140px]">
+              {categoryName}
+            </BrutalBadge>
+            <span className="text-[10px] font-bold text-black/60 bg-black/5 px-1.5 py-0.5 border border-black/15">
+              {formatTimeAgo(task.created_at)}
+            </span>
+          </div>
 
           <span className="brutal-border bg-taskYellow px-2.5 py-1 text-sm font-black brutal-shadow-sm">
             ₹{task.budget}
