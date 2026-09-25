@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Mail, AlertCircle, Sparkles } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,24 +17,39 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: 'google',
-          email: 'student@campus.edu.in',
-          name: 'Campus Student',
-        }),
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'offline',
+          },
+        },
       });
-      const data = await res.json();
-      if (data.success) {
-        router.push(data.redirectTo || '/dashboard');
-      } else {
-        setError(data.error || 'Google login failed');
+
+      if (oauthError) {
+        if (
+          oauthError.message.includes('not enabled') ||
+          oauthError.message.includes('Unsupported provider') ||
+          (oauthError as any).code === 'validation_failed'
+        ) {
+          setError(
+            'Google Sign-In is not enabled in your Supabase project yet. In your Supabase Dashboard, go to Authentication > Providers > Google and enable it. In the meantime, enter your email below to log in directly!'
+          );
+        } else {
+          setError(oauthError.message);
+        }
+        setLoading(false);
+        return;
       }
-    } catch {
-      setError('Could not connect to authentication service.');
-    } finally {
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Could not connect to Google authentication.');
       setLoading(false);
     }
   };

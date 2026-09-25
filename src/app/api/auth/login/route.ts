@@ -4,7 +4,7 @@ import { User } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
-    const { provider, email, name } = await req.json();
+    const { provider, email, name, avatar } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       user = db.createUser({
         name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
         email: email.toLowerCase(),
-        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(baseName)}&backgroundColor=ffd84d`,
+        avatar: avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(baseName)}&backgroundColor=ffd84d`,
         auth_provider: provider === 'google' ? 'google' : 'email',
         email_verified: true,
         college_verified: false,
