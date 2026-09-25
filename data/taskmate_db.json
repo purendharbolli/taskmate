@@ -1,0 +1,1447 @@
+{
+  "countries": [
+    {
+      "id": "c-in",
+      "name": "India"
+    }
+  ],
+  "states": [
+    {
+      "id": "st-tg",
+      "country_id": "c-in",
+      "name": "Telangana"
+    },
+    {
+      "id": "st-ka",
+      "country_id": "c-in",
+      "name": "Karnataka"
+    },
+    {
+      "id": "st-mh",
+      "country_id": "c-in",
+      "name": "Maharashtra"
+    }
+  ],
+  "cities": [
+    {
+      "id": "city-hyd",
+      "state_id": "st-tg",
+      "name": "Hyderabad"
+    },
+    {
+      "id": "city-wgl",
+      "state_id": "st-tg",
+      "name": "Warangal"
+    },
+    {
+      "id": "city-knr",
+      "state_id": "st-tg",
+      "name": "Karimnagar"
+    },
+    {
+      "id": "city-nzb",
+      "state_id": "st-tg",
+      "name": "Nizamabad"
+    },
+    {
+      "id": "city-blr",
+      "state_id": "st-ka",
+      "name": "Bengaluru"
+    },
+    {
+      "id": "city-pun",
+      "state_id": "st-mh",
+      "name": "Pune"
+    }
+  ],
+  "colleges": [
+    {
+      "id": "col-snist",
+      "city_id": "city-hyd",
+      "name": "SNIST - Sreenidhi Institute of Science and Technology",
+      "short_name": "SNIST",
+      "address": "Yamnampet, Ghatkesar, Hyderabad, Telangana 501301",
+      "email_domain": "sreenidhi.edu.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-10T00:00:00Z"
+    },
+    {
+      "id": "col-cbit",
+      "city_id": "city-hyd",
+      "name": "CBIT - Chaitanya Bharathi Institute of Technology",
+      "short_name": "CBIT",
+      "address": "Gandipet, Hyderabad, Telangana 500075",
+      "email_domain": "cbit.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-10T00:00:00Z"
+    },
+    {
+      "id": "col-vnr",
+      "city_id": "city-hyd",
+      "name": "VNR VJIET - Vallurupalli Nageswara Rao Vignana Jyothi Institute",
+      "short_name": "VNR VJIET",
+      "address": "Vignana Jyothi Nagar, Pragathi Nagar, Nizampet, Hyderabad 500090",
+      "email_domain": "vnrvjiet.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-10T00:00:00Z"
+    },
+    {
+      "id": "col-griet",
+      "city_id": "city-hyd",
+      "name": "GRIET - Gokaraju Rangaraju Institute of Engineering & Technology",
+      "short_name": "GRIET",
+      "address": "Bachupally, Kukatpally, Hyderabad, Telangana 500090",
+      "email_domain": "griet.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-10T00:00:00Z"
+    },
+    {
+      "id": "col-vasavi",
+      "city_id": "city-hyd",
+      "name": "Vasavi College of Engineering",
+      "short_name": "Vasavi",
+      "address": "9-5-81, Ibrahimbagh, Hyderabad, Telangana 500031",
+      "email_domain": "vce.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-12T00:00:00Z"
+    },
+    {
+      "id": "col-jntuh",
+      "city_id": "city-hyd",
+      "name": "JNTUH College of Engineering Hyderabad",
+      "short_name": "JNTUH CEH",
+      "address": "Kukatpally, Hyderabad, Telangana 500085",
+      "email_domain": "jntuh.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-15T00:00:00Z"
+    },
+    {
+      "id": "col-ouce",
+      "city_id": "city-hyd",
+      "name": "University College of Engineering, Osmania University",
+      "short_name": "OUCE",
+      "address": "Osmania University, Amberpet, Hyderabad 500007",
+      "email_domain": "uceou.edu",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-15T00:00:00Z"
+    },
+    {
+      "id": "col-nitw",
+      "city_id": "city-wgl",
+      "name": "NIT Warangal - National Institute of Technology",
+      "short_name": "NITW",
+      "address": "Kazipet, Hanamkonda, Warangal, Telangana 506004",
+      "email_domain": "nitw.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-18T00:00:00Z"
+    },
+    {
+      "id": "col-kits",
+      "city_id": "city-wgl",
+      "name": "KITS - Kakatiya Institute of Technology & Science",
+      "short_name": "KITSW",
+      "address": "Yerragattu Gutta, Hasanparthy, Warangal, Telangana 506015",
+      "email_domain": "kitsw.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-01-18T00:00:00Z"
+    },
+    {
+      "id": "col-rvce",
+      "city_id": "city-blr",
+      "name": "RV College of Engineering",
+      "short_name": "RVCE",
+      "address": "Mysore Road, Bengaluru, Karnataka 560059",
+      "email_domain": "rvce.edu.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-02-01T00:00:00Z"
+    },
+    {
+      "id": "col-bmsce",
+      "city_id": "city-blr",
+      "name": "BMS College of Engineering",
+      "short_name": "BMSCE",
+      "address": "Bull Temple Rd, Basavanagudi, Bengaluru, Karnataka 560019",
+      "email_domain": "bmsce.ac.in",
+      "verification_required": true,
+      "active": true,
+      "created_at": "2026-02-01T00:00:00Z"
+    }
+  ],
+  "campuses": [
+    {
+      "id": "cam-snist-main",
+      "college_id": "col-snist",
+      "name": "Main Campus",
+      "location": "Ghatkesar, Blocks A-E",
+      "active": true
+    },
+    {
+      "id": "cam-snist-hostel",
+      "college_id": "col-snist",
+      "name": "Hostel Zone & Cafeteria",
+      "location": "Behind Block D",
+      "active": true
+    },
+    {
+      "id": "cam-cbit-main",
+      "college_id": "col-cbit",
+      "name": "Main Academic Campus",
+      "location": "Gandipet Campus",
+      "active": true
+    },
+    {
+      "id": "cam-vnr-main",
+      "college_id": "col-vnr",
+      "name": "Nizampet Campus",
+      "location": "Bachupally Road",
+      "active": true
+    },
+    {
+      "id": "cam-griet-main",
+      "college_id": "col-griet",
+      "name": "Main Campus",
+      "location": "Bachupally, Main Block",
+      "active": true
+    },
+    {
+      "id": "cam-vasavi-main",
+      "college_id": "col-vasavi",
+      "name": "Ibrahimbagh Campus",
+      "location": "Ramanujan Block",
+      "active": true
+    }
+  ],
+  "college_requests": [
+    {
+      "id": "req-col-1",
+      "requested_by": "usr-rahul-9",
+      "requester_name": "Rahul Varma",
+      "college_name": "Malla Reddy Engineering College (MREC)",
+      "city_id": "city-hyd",
+      "city_name": "Hyderabad",
+      "website": "https://mrec.ac.in",
+      "email_domain": "mrec.ac.in",
+      "message": "Many first-year students in Maisammaguda need record writing and chart drawing help.",
+      "status": "PENDING",
+      "created_at": "2026-09-24T11:20:00Z"
+    },
+    {
+      "id": "req-col-2",
+      "requested_by": "usr-karthik-5",
+      "requester_name": "Karthik Raju",
+      "college_name": "CVR College of Engineering",
+      "city_id": "city-hyd",
+      "city_name": "Hyderabad",
+      "website": "https://cvr.ac.in",
+      "email_domain": "cvr.ac.in",
+      "message": "Active tech clubs and labs needing regular PPT and print services.",
+      "status": "APPROVED",
+      "reviewed_by": "usr-admin-1",
+      "reviewed_at": "2026-09-22T14:15:00Z",
+      "created_at": "2026-09-20T09:30:00Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-record",
+      "name": "Record Writing",
+      "group": "Academic & Creative",
+      "description": "Handwritten lab record notebooks copying where permitted",
+      "icon": "BookOpen",
+      "bgColor": "#FFD84D"
+    },
+    {
+      "id": "cat-notes",
+      "name": "Notes Copying",
+      "group": "Academic & Creative",
+      "description": "Neat handwriting copies of classroom & lecture notes",
+      "icon": "FileText",
+      "bgColor": "#8DD8FF"
+    },
+    {
+      "id": "cat-diagrams",
+      "name": "Diagrams & Charts",
+      "group": "Academic & Creative",
+      "description": "Engineering, circuit, and biology diagrams on chart sheets",
+      "icon": "PieChart",
+      "bgColor": "#FF8FB8"
+    },
+    {
+      "id": "cat-ppt",
+      "name": "PPT Creation",
+      "group": "Academic & Creative",
+      "description": "Seminar, project, and tech-talk PowerPoint slide decks",
+      "icon": "Presentation",
+      "bgColor": "#FFD84D"
+    },
+    {
+      "id": "cat-poster",
+      "name": "Poster Design",
+      "group": "Academic & Creative",
+      "description": "College club banners, project posters, and Canva graphics",
+      "icon": "Palette",
+      "bgColor": "#8DD8FF"
+    },
+    {
+      "id": "cat-print",
+      "name": "Printing & Binding",
+      "group": "Student Services",
+      "description": "High-speed xerox, color prints, and spiral binding pickup",
+      "icon": "Printer",
+      "bgColor": "#FF8FB8"
+    },
+    {
+      "id": "cat-scan",
+      "name": "Scanning & Digitizing",
+      "group": "Student Services",
+      "description": "CamScanner / OCR scanning of physical notes into PDF",
+      "icon": "Scan",
+      "bgColor": "#FFD84D"
+    },
+    {
+      "id": "cat-format",
+      "name": "Formatting & LaTeX",
+      "group": "Student Services",
+      "description": "IEEE report styling, margins, bibliography formatting",
+      "icon": "AlignLeft",
+      "bgColor": "#8DD8FF"
+    },
+    {
+      "id": "cat-data",
+      "name": "Data Entry",
+      "group": "Student Services",
+      "description": "Excel spreadsheets, Google Forms data compiling",
+      "icon": "Database",
+      "bgColor": "#FF8FB8"
+    },
+    {
+      "id": "cat-thumb",
+      "name": "Thumbnail Design",
+      "group": "Creative",
+      "description": "YouTube thumbnails for student creators & college channels",
+      "icon": "Image",
+      "bgColor": "#FFD84D"
+    },
+    {
+      "id": "cat-video",
+      "name": "Video Editing",
+      "group": "Creative",
+      "description": "Reels, event recaps, club intro videos editing",
+      "icon": "Video",
+      "bgColor": "#8DD8FF"
+    },
+    {
+      "id": "cat-photo",
+      "name": "Photography",
+      "group": "Creative",
+      "description": "Campus event coverage, project photos, portrait shoots",
+      "icon": "Camera",
+      "bgColor": "#FF8FB8"
+    },
+    {
+      "id": "cat-errand",
+      "name": "Campus Errands",
+      "group": "Campus Help",
+      "description": "Canteen food pickup, stationery runs, library drop-off",
+      "icon": "Package",
+      "bgColor": "#FFD84D"
+    },
+    {
+      "id": "cat-event",
+      "name": "Event Assistance",
+      "group": "Campus Help",
+      "description": "Fest setup, registration desk, sound check support",
+      "icon": "Users",
+      "bgColor": "#8DD8FF"
+    },
+    {
+      "id": "cat-other",
+      "name": "Other Assistance",
+      "group": "Campus Help",
+      "description": "Other legitimate student-to-student peer assistance",
+      "icon": "HelpCircle",
+      "bgColor": "#FF8FB8"
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-rohit-1",
+      "name": "Rohit Sharma",
+      "email": "rohit.ece@sreenidhi.edu.in",
+      "phone": "+91 98765 43210",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Rohit&backgroundColor=ffd84d",
+      "auth_provider": "google",
+      "provider_user_id": "google-rohit-101",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "bio": "B.Tech ECE Final Year @ SNIST. Need lab record writing and diagrams during hackathon weeks.",
+      "skills": [
+        "Circuit Design",
+        "MATLAB",
+        "Technical Reports"
+      ],
+      "rating": 4.8,
+      "completed_tasks": 18,
+      "completion_rate": 98,
+      "onboarding_completed": true,
+      "earnings_total": 1200,
+      "earnings_available": 800,
+      "earnings_pending": 400,
+      "spent_total": 3450,
+      "created_at": "2026-02-10T10:00:00Z",
+      "updated_at": "2026-09-24T12:00:00Z",
+      "last_login_at": "2026-09-25T14:30:00Z"
+    },
+    {
+      "id": "usr-priya-2",
+      "name": "Priya Reddy",
+      "email": "priya.cse@sreenidhi.edu.in",
+      "phone": "+91 98765 11223",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Priya&backgroundColor=ff8fb8",
+      "auth_provider": "google",
+      "provider_user_id": "google-priya-202",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "bio": "3rd Year CSE @ SNIST. Super neat handwriting, quick turnaround on diagrams, lab records & PPTs.",
+      "skills": [
+        "Handwriting",
+        "Diagrams",
+        "PowerPoint",
+        "Record Writing",
+        "Formatting"
+      ],
+      "rating": 4.9,
+      "completed_tasks": 27,
+      "completion_rate": 100,
+      "onboarding_completed": true,
+      "earnings_total": 4850,
+      "earnings_available": 3950,
+      "earnings_pending": 900,
+      "spent_total": 650,
+      "created_at": "2026-02-15T11:00:00Z",
+      "updated_at": "2026-09-25T10:00:00Z",
+      "last_login_at": "2026-09-25T15:10:00Z"
+    },
+    {
+      "id": "usr-purii-3",
+      "name": "Purii Rao",
+      "email": "purii.mech@cbit.ac.in",
+      "phone": "+91 98444 88776",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Purii&backgroundColor=8dd8ff",
+      "auth_provider": "google",
+      "provider_user_id": "google-purii-303",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-cbit",
+      "campus_id": "cam-cbit-main",
+      "bio": "CBIT Mechanical 4th Year. Specialist in charts, engineering drawing sheets & video editing.",
+      "skills": [
+        "Engineering Drawing",
+        "Handwriting",
+        "Design",
+        "Video Editing",
+        "PowerPoint"
+      ],
+      "rating": 4.8,
+      "completed_tasks": 23,
+      "completion_rate": 96,
+      "onboarding_completed": true,
+      "earnings_total": 4250,
+      "earnings_available": 3450,
+      "earnings_pending": 800,
+      "spent_total": 1200,
+      "created_at": "2026-02-20T12:00:00Z",
+      "updated_at": "2026-09-24T18:00:00Z",
+      "last_login_at": "2026-09-25T11:00:00Z"
+    },
+    {
+      "id": "usr-ananya-4",
+      "name": "Ananya Verma",
+      "email": "ananya.it@vnrvjiet.in",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Ananya&backgroundColor=ffd84d",
+      "auth_provider": "email",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-vnr",
+      "campus_id": "cam-vnr-main",
+      "bio": "VNR VJIET IT student. Love designing club posters, IEEE papers formatting & note transcription.",
+      "skills": [
+        "Poster Design",
+        "Canva",
+        "LaTeX",
+        "Data Entry"
+      ],
+      "rating": 5,
+      "completed_tasks": 14,
+      "completion_rate": 100,
+      "onboarding_completed": true,
+      "earnings_total": 2900,
+      "earnings_available": 2400,
+      "earnings_pending": 500,
+      "spent_total": 900,
+      "created_at": "2026-03-01T14:00:00Z",
+      "updated_at": "2026-09-23T16:00:00Z",
+      "last_login_at": "2026-09-24T20:00:00Z"
+    },
+    {
+      "id": "usr-karthik-5",
+      "name": "Karthik Raju",
+      "email": "karthik.civil@sreenidhi.edu.in",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Karthik&backgroundColor=8dd8ff",
+      "auth_provider": "google",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "bio": "Fast on campus! Can do document prints, canteen deliveries, and lab notebook drop-offs.",
+      "skills": [
+        "Campus Errands",
+        "Printing",
+        "Event Assistance"
+      ],
+      "rating": 4.7,
+      "completed_tasks": 19,
+      "completion_rate": 95,
+      "onboarding_completed": true,
+      "earnings_total": 1850,
+      "earnings_available": 1550,
+      "earnings_pending": 300,
+      "spent_total": 450,
+      "created_at": "2026-03-05T09:00:00Z",
+      "updated_at": "2026-09-24T10:00:00Z",
+      "last_login_at": "2026-09-25T13:00:00Z"
+    },
+    {
+      "id": "usr-sneha-6",
+      "name": "Sneha Kulkarni",
+      "email": "sneha.ece@vce.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Sneha&backgroundColor=ff8fb8",
+      "auth_provider": "email",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-vasavi",
+      "campus_id": "cam-vasavi-main",
+      "bio": "Vasavi College of Engg. Creative video editor, thumbnail specialist & clean notes writer.",
+      "skills": [
+        "Video Editing",
+        "Thumbnail Design",
+        "Notes Copying"
+      ],
+      "rating": 4.9,
+      "completed_tasks": 16,
+      "completion_rate": 100,
+      "onboarding_completed": true,
+      "earnings_total": 3100,
+      "earnings_available": 2750,
+      "earnings_pending": 350,
+      "spent_total": 600,
+      "created_at": "2026-03-10T16:00:00Z",
+      "updated_at": "2026-09-24T19:00:00Z",
+      "last_login_at": "2026-09-25T09:00:00Z"
+    },
+    {
+      "id": "usr-vikram-7",
+      "name": "Vikram Chowdary",
+      "email": "vikram.cse@griet.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Vikram&backgroundColor=ffd84d",
+      "auth_provider": "google",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-griet",
+      "campus_id": "cam-griet-main",
+      "bio": "GRIET CSE 3rd Year. Tech fest organizer, audio setup assistant, slides presentation expert.",
+      "skills": [
+        "Event Assistance",
+        "PowerPoint",
+        "Audio Setup"
+      ],
+      "rating": 4.8,
+      "completed_tasks": 11,
+      "completion_rate": 92,
+      "onboarding_completed": true,
+      "earnings_total": 2150,
+      "earnings_available": 1800,
+      "earnings_pending": 350,
+      "spent_total": 1100,
+      "created_at": "2026-03-15T11:00:00Z",
+      "updated_at": "2026-09-23T14:00:00Z",
+      "last_login_at": "2026-09-24T18:00:00Z"
+    },
+    {
+      "id": "usr-divya-8",
+      "name": "Divya Teja",
+      "email": "divya.it@cbit.ac.in",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Divya&backgroundColor=8dd8ff",
+      "auth_provider": "google",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-cbit",
+      "campus_id": "cam-cbit-main",
+      "bio": "CBIT IT sophomore. Accurate data entry, neat handwriting, and fast document conversions.",
+      "skills": [
+        "Data Entry",
+        "Handwriting",
+        "Spreadsheets"
+      ],
+      "rating": 4.6,
+      "completed_tasks": 8,
+      "completion_rate": 100,
+      "onboarding_completed": true,
+      "earnings_total": 1350,
+      "earnings_available": 1100,
+      "earnings_pending": 250,
+      "spent_total": 400,
+      "created_at": "2026-04-01T10:00:00Z",
+      "updated_at": "2026-09-22T17:00:00Z",
+      "last_login_at": "2026-09-24T12:00:00Z"
+    },
+    {
+      "id": "usr-rahul-9",
+      "name": "Rahul Varma",
+      "email": "rahul.ece@sreenidhi.edu.in",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Rahul&backgroundColor=ffd84d",
+      "auth_provider": "email",
+      "email_verified": true,
+      "college_verified": false,
+      "role": "USER",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "bio": "1st Year SNIST ECE. Just getting started on campus! Ready to help with notes and errands.",
+      "skills": [
+        "Handwriting",
+        "Notes Copying"
+      ],
+      "rating": 4.5,
+      "completed_tasks": 2,
+      "completion_rate": 100,
+      "onboarding_completed": true,
+      "earnings_total": 350,
+      "earnings_available": 350,
+      "earnings_pending": 0,
+      "spent_total": 700,
+      "created_at": "2026-09-18T10:00:00Z",
+      "updated_at": "2026-09-24T15:00:00Z",
+      "last_login_at": "2026-09-25T08:00:00Z"
+    },
+    {
+      "id": "usr-admin-1",
+      "name": "Campus Lead Admin",
+      "email": "admin@taskmate.campus",
+      "phone": "+91 99999 00000",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=SuperAdmin&backgroundColor=ffd84d",
+      "auth_provider": "email",
+      "email_verified": true,
+      "college_verified": true,
+      "role": "SUPER_ADMIN",
+      "country_id": "c-in",
+      "state_id": "st-tg",
+      "city_id": "city-hyd",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "bio": "TaskMate Hyderabad Super Admin & Trust Officer. Managing campus verifications, safety & disputes.",
+      "skills": [
+        "Moderation",
+        "Community Lead",
+        "Quality Control"
+      ],
+      "rating": 5,
+      "completed_tasks": 45,
+      "completion_rate": 100,
+      "onboarding_completed": true,
+      "earnings_total": 0,
+      "earnings_available": 0,
+      "earnings_pending": 0,
+      "spent_total": 0,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-09-25T12:00:00Z",
+      "last_login_at": "2026-09-25T15:00:00Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "tsk-1",
+      "requester_id": "usr-rohit-1",
+      "category_id": "cat-record",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "RECORD WRITING - Electronics Lab (35 Pages)",
+      "description": "Need neat handwritten copies of the attached electronics lab experiments (Op-Amp & 555 Timer circuits) onto provided record sheets. Materials are clearly legible PDFs.",
+      "budget": 350,
+      "quantity": "35 pages",
+      "deadline": "Tomorrow · 5:00 PM",
+      "location": "SNIST · Block C Electronics Lab",
+      "distance_approx": "0.8 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-25T14:45:00Z",
+      "view_count": 42
+    },
+    {
+      "id": "tsk-2",
+      "requester_id": "usr-purii-3",
+      "category_id": "cat-diagrams",
+      "college_id": "col-cbit",
+      "campus_id": "cam-cbit-main",
+      "city_id": "city-hyd",
+      "title": "Engineering Drawing Charts (4 Large Sheets)",
+      "description": "Need isometric and orthographic projection diagrams drawn neatly with 2H/4H pencils as per specifications on 4 standard A2 drawing sheets. Drafting tools provided if needed.",
+      "budget": 450,
+      "quantity": "4 sheets",
+      "deadline": "Friday · 3:00 PM",
+      "location": "CBIT · Mechanical Block Workshop",
+      "distance_approx": "1.2 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-25T13:10:00Z",
+      "view_count": 67
+    },
+    {
+      "id": "tsk-3",
+      "requester_id": "usr-ananya-4",
+      "category_id": "cat-notes",
+      "college_id": "col-vnr",
+      "campus_id": "cam-vnr-main",
+      "city_id": "city-hyd",
+      "title": "Data Structures Notes Copying (28 Pages)",
+      "description": "Missed two weeks of Graph algorithms and Binary Trees lectures due to campus hackathon. Need clear, readable handwritten copy from topper notebook photos.",
+      "budget": 300,
+      "quantity": "28 pages",
+      "deadline": "Sunday · 6:00 PM",
+      "location": "VNR VJIET · Central Library Ground Floor",
+      "distance_approx": "0.5 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-25T12:00:00Z",
+      "view_count": 53
+    },
+    {
+      "id": "tsk-4",
+      "requester_id": "usr-rohit-1",
+      "category_id": "cat-ppt",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "Annual Tech Fest Pitch Deck PPT Creation (15 Slides)",
+      "description": "Looking for a student good with PowerPoint / Figma to turn our rough bullet points into an awesome, visual 15-slide pitch deck for our E-Cell startup presentation.",
+      "budget": 600,
+      "quantity": "15 slides",
+      "deadline": "Tomorrow · 8:00 PM",
+      "location": "SNIST · E-Cell Incubation Wing",
+      "distance_approx": "0.3 km away",
+      "handover_method": "Self-arranged delivery",
+      "status": "OPEN",
+      "created_at": "2026-09-25T11:20:00Z",
+      "view_count": 89
+    },
+    {
+      "id": "tsk-5",
+      "requester_id": "usr-sneha-6",
+      "category_id": "cat-record",
+      "college_id": "col-vasavi",
+      "campus_id": "cam-vasavi-main",
+      "city_id": "city-hyd",
+      "title": "Circuit Simulation Lab Observation Book (22 Pages)",
+      "description": "Transfer simulation graphs and tabular outputs into observation handbook. Graphs are printed, just need neatly pasted and tabular entries filled.",
+      "budget": 400,
+      "quantity": "22 pages",
+      "deadline": "In 2 days · 4:00 PM",
+      "location": "Vasavi · Ramanujan Block 2nd Floor",
+      "distance_approx": "0.9 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-25T10:00:00Z",
+      "view_count": 38
+    },
+    {
+      "id": "tsk-6",
+      "requester_id": "usr-vikram-7",
+      "category_id": "cat-print",
+      "college_id": "col-griet",
+      "campus_id": "cam-griet-main",
+      "city_id": "city-hyd",
+      "title": "Printing 120 Pages + Spiral Binding Pickup",
+      "description": "Have a project synopsis PDF (120 b/w pages + 4 color pages). Need someone to get it printed at the campus stationery shop, spiral bind it, and hand it over at Main Gate.",
+      "budget": 180,
+      "quantity": "120 pages",
+      "deadline": "Today · 4:00 PM",
+      "location": "GRIET · Main Gate / Stationery Stall",
+      "distance_approx": "0.2 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-25T09:15:00Z",
+      "view_count": 74
+    },
+    {
+      "id": "tsk-7",
+      "requester_id": "usr-karthik-5",
+      "category_id": "cat-poster",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "Robotics Club Hackathon Poster Design",
+      "description": "Need 2 vibrant poster variants (Instagram 1080x1350 + A3 print size) for our upcoming Inter-College Drone Grand Prix. Logos and brand colors will be supplied.",
+      "budget": 500,
+      "quantity": "2 designs",
+      "deadline": "Saturday · 5:00 PM",
+      "location": "SNIST · Block B Innovation Hall",
+      "distance_approx": "0.4 km away",
+      "handover_method": "Self-arranged delivery",
+      "status": "OPEN",
+      "created_at": "2026-09-24T18:00:00Z",
+      "view_count": 112
+    },
+    {
+      "id": "tsk-8",
+      "requester_id": "usr-divya-8",
+      "category_id": "cat-diagrams",
+      "college_id": "col-cbit",
+      "campus_id": "cam-cbit-main",
+      "city_id": "city-hyd",
+      "title": "Microprocessor 8086 Timing Diagrams (12 Figures)",
+      "description": "Need 12 timing diagrams for 8086 bus cycle, read/write timing drawn cleanly with fine-tip pens in lab journal notebook. Clear reference textbook diagrams provided.",
+      "budget": 250,
+      "quantity": "12 diagrams",
+      "deadline": "Tomorrow · 2:00 PM",
+      "location": "CBIT · ECE Block Level 3",
+      "distance_approx": "1.0 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-24T16:30:00Z",
+      "view_count": 45
+    },
+    {
+      "id": "tsk-9",
+      "requester_id": "usr-ananya-4",
+      "category_id": "cat-format",
+      "college_id": "col-vnr",
+      "campus_id": "cam-vnr-main",
+      "city_id": "city-hyd",
+      "title": "IEEE Conference Paper Formatting (8 Pages)",
+      "description": "Convert our Word draft into proper double-column IEEE LaTeX template, format all citations with BibTeX, and adjust table margins cleanly for submission.",
+      "budget": 350,
+      "quantity": "8 pages",
+      "deadline": "Monday · 12:00 PM",
+      "location": "VNR VJIET · CSE Lab 4",
+      "distance_approx": "0.6 km away",
+      "handover_method": "Self-arranged delivery",
+      "status": "OPEN",
+      "created_at": "2026-09-24T14:00:00Z",
+      "view_count": 82
+    },
+    {
+      "id": "tsk-10",
+      "requester_id": "usr-vikram-7",
+      "category_id": "cat-event",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "Campus Tech Fest Audio & Stage Assistance (4 Hours)",
+      "description": "Looking for 2 reliable students to help manage mic checks, registration kits distribution, and guest speaker guidance at the Main Auditorium during morning sessions.",
+      "budget": 750,
+      "quantity": "4 hours",
+      "deadline": "Saturday · 10:00 AM",
+      "location": "SNIST · Main Auditorium",
+      "distance_approx": "0.2 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-24T12:00:00Z",
+      "view_count": 145
+    },
+    {
+      "id": "tsk-11",
+      "requester_id": "usr-sneha-6",
+      "category_id": "cat-thumb",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "YouTube Thumbnails for College Coding Channel (2 Thumbnails)",
+      "description": "High CTR bold thumbnails for \"DSA in 30 Days\" and \"Web Dev Roadmap\" videos. Neo-brutalist or high contrast sticker style preferred.",
+      "budget": 280,
+      "quantity": "2 thumbnails",
+      "deadline": "Tomorrow · 6:00 PM",
+      "location": "SNIST · Canteen Plaza",
+      "distance_approx": "0.3 km away",
+      "handover_method": "Self-arranged delivery",
+      "status": "OPEN",
+      "created_at": "2026-09-24T10:00:00Z",
+      "view_count": 57
+    },
+    {
+      "id": "tsk-12",
+      "requester_id": "usr-karthik-5",
+      "category_id": "cat-errand",
+      "college_id": "col-cbit",
+      "campus_id": "cam-cbit-main",
+      "city_id": "city-hyd",
+      "title": "Canteen Lunch Parcel Pickup to Research Block",
+      "description": "Stuck in a continuous hardware debugging session. Need someone going towards Canteen to grab 2 Thali parcels and drop them at Embedded Systems Lab.",
+      "budget": 120,
+      "quantity": "1 trip",
+      "deadline": "Today · 1:30 PM",
+      "location": "CBIT · Canteen to R&D Lab",
+      "distance_approx": "0.4 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-24T08:30:00Z",
+      "view_count": 31
+    },
+    {
+      "id": "tsk-13",
+      "requester_id": "usr-rohit-1",
+      "category_id": "cat-data",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "Survey Data Cleaning in Google Sheets (200 Responses)",
+      "description": "Have student entrepreneurship survey responses from Google Forms. Need duplicate cleanup, phone number standardizing, and creating 3 summary pivot charts.",
+      "budget": 350,
+      "quantity": "200 rows",
+      "deadline": "In 3 days · 5:00 PM",
+      "location": "SNIST · MBA Seminar Hall",
+      "distance_approx": "0.7 km away",
+      "handover_method": "Self-arranged delivery",
+      "status": "OPEN",
+      "created_at": "2026-09-23T15:00:00Z",
+      "view_count": 62
+    },
+    {
+      "id": "tsk-14",
+      "requester_id": "usr-purii-3",
+      "category_id": "cat-video",
+      "college_id": "col-cbit",
+      "campus_id": "cam-cbit-main",
+      "city_id": "city-hyd",
+      "title": "Short 60s Reel Video Editing for College SAE BAJA Team",
+      "description": "Raw clips of our ATV car testing on dirt track provided. Need fast-paced 60s sync reel with beat drop, subtitles, and team logo outro.",
+      "budget": 550,
+      "quantity": "60s video",
+      "deadline": "Sunday · 8:00 PM",
+      "location": "CBIT · Automotive Lab",
+      "distance_approx": "1.1 km away",
+      "handover_method": "Self-arranged delivery",
+      "status": "OPEN",
+      "created_at": "2026-09-23T11:00:00Z",
+      "view_count": 94
+    },
+    {
+      "id": "tsk-15",
+      "requester_id": "usr-rahul-9",
+      "category_id": "cat-record",
+      "college_id": "col-snist",
+      "campus_id": "cam-snist-main",
+      "city_id": "city-hyd",
+      "title": "Chemistry Lab Observation Record (30 Pages)",
+      "description": "Need neat handwriting for Chemistry titration & salt analysis procedures in standard record notebook. All procedures and calculations are written in rough copy.",
+      "budget": 320,
+      "quantity": "30 pages",
+      "deadline": "Friday · 11:00 AM",
+      "location": "SNIST · Chemistry Lab Wing 1",
+      "distance_approx": "0.6 km away",
+      "handover_method": "Campus meeting point",
+      "status": "OPEN",
+      "created_at": "2026-09-23T09:00:00Z",
+      "view_count": 48
+    }
+  ],
+  "task_files": [
+    {
+      "id": "tf-1",
+      "task_id": "tsk-1",
+      "file_name": "analog_electronics_lab_manual.pdf",
+      "file_url": "/demo-files/analog_lab.pdf",
+      "file_type": "application/pdf",
+      "file_size": "2.4 MB"
+    },
+    {
+      "id": "tf-2",
+      "task_id": "tsk-1",
+      "file_name": "exp_5_timer_circuit.png",
+      "file_url": "/demo-files/timer_circuit.png",
+      "file_type": "image/png",
+      "file_size": "850 KB"
+    },
+    {
+      "id": "tf-3",
+      "task_id": "tsk-1",
+      "file_name": "experiment_index_pages.pdf",
+      "file_url": "/demo-files/index_pages.pdf",
+      "file_type": "application/pdf",
+      "file_size": "1.1 MB"
+    },
+    {
+      "id": "tf-4",
+      "task_id": "tsk-2",
+      "file_name": "orthographic_specs.pdf",
+      "file_url": "/demo-files/specs.pdf",
+      "file_type": "application/pdf",
+      "file_size": "3.2 MB"
+    },
+    {
+      "id": "tf-5",
+      "task_id": "tsk-3",
+      "file_name": "ds_trees_graphs_scans.pdf",
+      "file_url": "/demo-files/ds_notes.pdf",
+      "file_type": "application/pdf",
+      "file_size": "5.8 MB"
+    },
+    {
+      "id": "tf-6",
+      "task_id": "tsk-4",
+      "file_name": "pitch_deck_outline.docx",
+      "file_url": "/demo-files/pitch_outline.docx",
+      "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "file_size": "420 KB"
+    }
+  ],
+  "applications": [
+    {
+      "id": "app-1",
+      "task_id": "tsk-1",
+      "worker_id": "usr-priya-2",
+      "proposed_price": 350,
+      "completion_time": "Tomorrow by 4:00 PM",
+      "message": "Hi Rohit! I have neat cursive handwriting and completed 18 similar lab records with A+ ratings. Can hand over at Block C cafeteria by 4 PM sharp.",
+      "status": "PENDING",
+      "created_at": "2026-09-25T14:55:00Z"
+    },
+    {
+      "id": "app-2",
+      "task_id": "tsk-1",
+      "worker_id": "usr-karthik-5",
+      "proposed_price": 320,
+      "completion_time": "Tomorrow by 3:00 PM",
+      "message": "I stay in the campus hostel right next to Block C. Can pick up the manual anytime and deliver before 3 PM.",
+      "status": "PENDING",
+      "created_at": "2026-09-25T15:05:00Z"
+    },
+    {
+      "id": "app-3",
+      "task_id": "tsk-2",
+      "worker_id": "usr-purii-3",
+      "proposed_price": 450,
+      "completion_time": "Friday by 2:00 PM",
+      "message": "I have standard mini-drafter, French curves, and A2 drawing boards. Can show sample sheets beforehand.",
+      "status": "PENDING",
+      "created_at": "2026-09-25T13:40:00Z"
+    },
+    {
+      "id": "app-4",
+      "task_id": "tsk-4",
+      "worker_id": "usr-priya-2",
+      "proposed_price": 600,
+      "completion_time": "Tomorrow by 6:00 PM",
+      "message": "I am part of the campus design cell and have crafted decks for college hackathon finalists. Will make it modern neo-brutalist!",
+      "status": "PENDING",
+      "created_at": "2026-09-25T12:10:00Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-101",
+      "task_id": "tsk-101-demo",
+      "requester_id": "usr-rohit-1",
+      "worker_id": "usr-priya-2",
+      "amount": 350,
+      "platform_fee": 20,
+      "total_amount": 370,
+      "status": "WORK_IN_PROGRESS",
+      "created_at": "2026-09-25T09:00:00Z",
+      "updated_at": "2026-09-25T11:00:00Z"
+    },
+    {
+      "id": "ord-102",
+      "task_id": "tsk-102-demo",
+      "requester_id": "usr-rohit-1",
+      "worker_id": "usr-priya-2",
+      "amount": 400,
+      "platform_fee": 20,
+      "total_amount": 420,
+      "status": "READY_FOR_HANDOVER",
+      "handover_otp": "5832",
+      "created_at": "2026-09-24T10:00:00Z",
+      "updated_at": "2026-09-25T13:30:00Z",
+      "ready_at": "2026-09-25T13:30:00Z"
+    },
+    {
+      "id": "ord-103",
+      "task_id": "tsk-103-demo",
+      "requester_id": "usr-ananya-4",
+      "worker_id": "usr-purii-3",
+      "amount": 450,
+      "platform_fee": 20,
+      "total_amount": 470,
+      "status": "DELIVERED",
+      "handover_otp": "4190",
+      "created_at": "2026-09-24T08:00:00Z",
+      "updated_at": "2026-09-25T14:00:00Z",
+      "ready_at": "2026-09-25T12:30:00Z",
+      "delivered_at": "2026-09-25T14:00:00Z"
+    },
+    {
+      "id": "ord-104",
+      "task_id": "tsk-104-demo",
+      "requester_id": "usr-rohit-1",
+      "worker_id": "usr-priya-2",
+      "amount": 350,
+      "platform_fee": 20,
+      "total_amount": 370,
+      "status": "PAYMENT_RELEASED",
+      "handover_otp": "9214",
+      "created_at": "2026-09-20T10:00:00Z",
+      "updated_at": "2026-09-21T18:00:00Z",
+      "ready_at": "2026-09-21T16:00:00Z",
+      "delivered_at": "2026-09-21T17:30:00Z",
+      "released_at": "2026-09-22T17:30:00Z"
+    },
+    {
+      "id": "ord-105",
+      "task_id": "tsk-105-demo",
+      "requester_id": "usr-vikram-7",
+      "worker_id": "usr-karthik-5",
+      "amount": 380,
+      "platform_fee": 20,
+      "total_amount": 400,
+      "status": "DISPUTE_OPEN",
+      "handover_otp": "7741",
+      "created_at": "2026-09-23T10:00:00Z",
+      "updated_at": "2026-09-24T17:00:00Z",
+      "ready_at": "2026-09-24T15:00:00Z",
+      "delivered_at": "2026-09-24T16:30:00Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay-1",
+      "order_id": "ord-101",
+      "amount": 350,
+      "platform_fee": 20,
+      "status": "HELD",
+      "payment_method": "UPI / Mock TaskMate Escrow Vault",
+      "transaction_ref": "TM-UPI-9841284",
+      "created_at": "2026-09-25T09:05:00Z"
+    },
+    {
+      "id": "pay-2",
+      "order_id": "ord-102",
+      "amount": 400,
+      "platform_fee": 20,
+      "status": "HELD",
+      "payment_method": "UPI / Mock TaskMate Escrow Vault",
+      "transaction_ref": "TM-UPI-7712940",
+      "created_at": "2026-09-24T10:10:00Z"
+    },
+    {
+      "id": "pay-3",
+      "order_id": "ord-103",
+      "amount": 450,
+      "platform_fee": 20,
+      "status": "HELD",
+      "payment_method": "UPI / Mock TaskMate Escrow Vault",
+      "transaction_ref": "TM-UPI-4182903",
+      "created_at": "2026-09-24T08:15:00Z"
+    },
+    {
+      "id": "pay-4",
+      "order_id": "ord-104",
+      "amount": 350,
+      "platform_fee": 20,
+      "status": "RELEASED",
+      "payment_method": "UPI / Mock TaskMate Escrow Vault",
+      "transaction_ref": "TM-UPI-1092834",
+      "created_at": "2026-09-20T10:15:00Z",
+      "released_at": "2026-09-22T17:30:00Z"
+    },
+    {
+      "id": "pay-5",
+      "order_id": "ord-105",
+      "amount": 380,
+      "platform_fee": 20,
+      "status": "HELD",
+      "payment_method": "UPI / Mock TaskMate Escrow Vault",
+      "transaction_ref": "TM-UPI-5528190",
+      "created_at": "2026-09-23T10:15:00Z"
+    }
+  ],
+  "handovers": [
+    {
+      "id": "hnd-1",
+      "order_id": "ord-102",
+      "otp_code": "5832",
+      "otp_hash": "5832",
+      "status": "PENDING"
+    },
+    {
+      "id": "hnd-2",
+      "order_id": "ord-103",
+      "otp_code": "4190",
+      "otp_hash": "4190",
+      "verified_at": "2026-09-25T14:00:00Z",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "hnd-3",
+      "order_id": "ord-104",
+      "otp_code": "9214",
+      "otp_hash": "9214",
+      "verified_at": "2026-09-21T17:30:00Z",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "hnd-4",
+      "order_id": "ord-105",
+      "otp_code": "7741",
+      "otp_hash": "7741",
+      "verified_at": "2026-09-24T16:30:00Z",
+      "status": "VERIFIED"
+    }
+  ],
+  "disputes": [
+    {
+      "id": "dsp-184",
+      "order_id": "ord-105",
+      "opened_by": "usr-vikram-7",
+      "reason": "Missing pages",
+      "description": "The final 8 pages of the simulation tables were left blank, even though the full PDF data was provided. Handover OTP was exchanged before inspecting the last pages.",
+      "evidence_urls": [
+        "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "status": "OPEN",
+      "created_at": "2026-09-24T17:00:00Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev-1",
+      "order_id": "ord-104",
+      "reviewer_id": "usr-rohit-1",
+      "reviewee_id": "usr-priya-2",
+      "rating": 5,
+      "comment": "Very neat work! Delivered 2 hours before the deadline at Block C cafeteria. Cursive handwriting was super crisp and verified by our lab faculty.",
+      "created_at": "2026-09-21T19:00:00Z"
+    },
+    {
+      "id": "rev-2",
+      "order_id": "ord-demo-old1",
+      "reviewer_id": "usr-ananya-4",
+      "reviewee_id": "usr-purii-3",
+      "rating": 5,
+      "comment": "Delivered early and charts were drawn strictly per engineering guidelines. Highly recommended for CBIT / Hyderabad students!",
+      "created_at": "2026-09-18T14:00:00Z"
+    },
+    {
+      "id": "rev-3",
+      "order_id": "ord-demo-old2",
+      "reviewer_id": "usr-purii-3",
+      "reviewee_id": "usr-priya-2",
+      "rating": 5,
+      "comment": "Flawless slides deck and diagram sketches. Great communication on chat!",
+      "created_at": "2026-09-15T11:00:00Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "user_id": "usr-rohit-1",
+      "type": "TASK_READY",
+      "title": "Task Ready for Handover! 📦",
+      "message": "Priya Reddy has marked \"Digital Logic Design Lab\" ready. Meet at Block C and share your 4-digit OTP: 5832.",
+      "link": "/orders/ord-102",
+      "read": false,
+      "created_at": "2026-09-25T13:30:00Z"
+    },
+    {
+      "id": "notif-2",
+      "user_id": "usr-rohit-1",
+      "type": "APPLICATION_RECEIVED",
+      "title": "New Applicant for Record Writing ✍️",
+      "message": "Priya Reddy applied for ₹350 (\"I have neat cursive handwriting and can hand over by 4 PM\").",
+      "link": "/tasks/tsk-1",
+      "read": false,
+      "created_at": "2026-09-25T14:55:00Z"
+    },
+    {
+      "id": "notif-3",
+      "user_id": "usr-priya-2",
+      "type": "PAYMENT_SECURED",
+      "title": "Payment Secured! ₹350 Held 🔒",
+      "message": "Rohit Sharma has secured payment for \"Electronics Lab Record\". You can safely start work!",
+      "link": "/orders/ord-101",
+      "read": true,
+      "created_at": "2026-09-25T09:05:00Z"
+    },
+    {
+      "id": "notif-4",
+      "user_id": "usr-rohit-1",
+      "type": "DELIVERY_CONFIRMED",
+      "title": "Handover Verified! ✅",
+      "message": "OTP 9214 was verified on campus. 24-hour review window has commenced.",
+      "link": "/orders/ord-104",
+      "read": true,
+      "created_at": "2026-09-21T17:30:00Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-1",
+      "order_id": "ord-102",
+      "sender_id": "usr-rohit-1",
+      "message": "Hi Priya! Can you finish by 4 PM tomorrow?",
+      "created_at": "2026-09-24T10:15:00Z"
+    },
+    {
+      "id": "msg-2",
+      "order_id": "ord-102",
+      "sender_id": "usr-priya-2",
+      "message": "Yes! I have already started reading through the 555 timer circuit PDF.",
+      "created_at": "2026-09-24T10:18:00Z"
+    },
+    {
+      "id": "msg-3",
+      "order_id": "ord-102",
+      "sender_id": "usr-priya-2",
+      "message": "I'll meet you at Block C cafeteria by 3:30 PM with the completed lab sheets.",
+      "created_at": "2026-09-25T13:28:00Z"
+    },
+    {
+      "id": "msg-4",
+      "order_id": "ord-102",
+      "sender_id": "usr-rohit-1",
+      "message": "Awesome. I will inspect the pages and give you the 4-digit OTP there!",
+      "created_at": "2026-09-25T13:32:00Z"
+    }
+  ],
+  "verification_requests": [
+    {
+      "id": "vr-1",
+      "user_id": "usr-rahul-9",
+      "user_name": "Rahul Varma",
+      "college_id": "col-snist",
+      "college_name": "SNIST - Sreenidhi Institute of Science and Technology",
+      "college_email": "rahul.ece24@sreenidhi.edu.in",
+      "status": "PENDING",
+      "submission_date": "2026-09-24T15:20:00Z"
+    },
+    {
+      "id": "vr-2",
+      "user_id": "usr-rohit-1",
+      "user_name": "Rohit Sharma",
+      "college_id": "col-snist",
+      "college_name": "SNIST",
+      "college_email": "rohit.ece@sreenidhi.edu.in",
+      "status": "APPROVED",
+      "submission_date": "2026-02-10T10:15:00Z",
+      "reviewed_by": "usr-admin-1",
+      "reviewed_at": "2026-02-10T11:00:00Z",
+      "review_notes": "Verified institutional email domain matches sreenidhi.edu.in"
+    },
+    {
+      "id": "vr-3",
+      "user_id": "usr-priya-2",
+      "user_name": "Priya Reddy",
+      "college_id": "col-snist",
+      "college_name": "SNIST",
+      "college_email": "priya.cse@sreenidhi.edu.in",
+      "status": "APPROVED",
+      "submission_date": "2026-02-15T11:20:00Z",
+      "reviewed_by": "usr-admin-1",
+      "reviewed_at": "2026-02-15T12:00:00Z",
+      "review_notes": "Official student email confirmed"
+    }
+  ],
+  "moderation_reports": [
+    {
+      "id": "rep-1",
+      "reporter_id": "usr-ananya-4",
+      "reporter_name": "Ananya Verma",
+      "reported_user_id": "usr-vikram-7",
+      "reported_user_name": "Vikram Chowdary",
+      "related_task_id": "tsk-105-demo",
+      "reason": "Academic-integrity concern",
+      "description": "User requested someone to take an online quiz directly. We reminded them TaskMate only permits legitimate notes, diagrams, records, and design assistance.",
+      "status": "OPEN",
+      "created_at": "2026-09-24T18:30:00Z"
+    },
+    {
+      "id": "rep-2",
+      "reporter_id": "usr-purii-3",
+      "reporter_name": "Purii Rao",
+      "reported_user_id": "usr-karthik-5",
+      "reported_user_name": "Karthik Raju",
+      "related_order_id": "ord-105",
+      "reason": "Academic-integrity concern",
+      "description": "Submitted work missing required experiment charts.",
+      "status": "UNDER_REVIEW",
+      "created_at": "2026-09-24T17:15:00Z"
+    }
+  ],
+  "audit_logs": [
+    {
+      "id": "aud-1",
+      "user_id": "usr-admin-1",
+      "action": "APPROVE_COLLEGE_REQUEST",
+      "target_type": "college_request",
+      "target_id": "req-col-2",
+      "details": "Approved CVR College of Engineering addition request for Hyderabad",
+      "created_at": "2026-09-22T14:15:00Z"
+    },
+    {
+      "id": "aud-2",
+      "user_id": "usr-admin-1",
+      "action": "VERIFY_STUDENT",
+      "target_type": "user",
+      "target_id": "usr-priya-2",
+      "details": "Approved college verification for priya.cse@sreenidhi.edu.in",
+      "created_at": "2026-02-15T12:00:00Z"
+    }
+  ]
+}
