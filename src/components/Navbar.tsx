@@ -141,13 +141,6 @@ export const Navbar: React.FC = () => {
                 >
                   How It Works
                 </Link>
-
-                <Link
-                  href="/tasks"
-                  className="px-3 py-2 border-2 border-transparent hover:border-black hover:bg-white transition-all text-black/70 hover:text-black"
-                >
-                  Become a Worker
-                </Link>
               </>
             )}
           </nav>

@@ -79,73 +79,63 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Right Column: Hero Visual (Student, Task Card, Campus, Earning & Completion OTP) */}
+          {/* Right Column: Authentic Platform Overview Card */}
           <div className="lg:col-span-5">
             <div className="bg-white brutal-border brutal-shadow-lg p-6 space-y-4 relative">
-              {/* Student Header & Campus Indicator */}
               <div className="flex items-center justify-between border-b-2 border-black/10 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-taskYellow brutal-border flex items-center justify-center font-black text-sm">
-                    PR
-                  </div>
-                  <div>
-                    <h4 className="font-black text-xs uppercase text-taskBlack">Priya Reddy</h4>
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-black/60">
-                      <MapPin className="w-3 h-3 text-taskBlack" />
-                      <span>SNIST · Main Campus</span>
-                    </div>
-                  </div>
-                </div>
-
-                <span className="sticker-tag bg-taskGreen text-black text-[10px] font-black px-2 py-0.5">
-                  ONLINE NEAR YOU
+                <span className="sticker-tag bg-taskYellow text-taskBlack text-xs font-black px-2.5 py-0.5 brutal-border">
+                  STUDENTS HELPING STUDENTS
+                </span>
+                <span className="text-[11px] font-black text-taskGreen flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-taskGreen animate-pulse"></span>
+                  HYPERLOCAL
                 </span>
               </div>
 
-              {/* Task Card Body */}
-              <div className="brutal-border bg-taskOffWhite p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <BrutalBadge variant="yellow" size="sm">
-                    RECORD WRITING
-                  </BrutalBadge>
-                  <span className="font-black text-xs text-red-600 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Due Tomorrow · 5:00 PM</span>
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="font-black text-sm uppercase text-taskBlack leading-snug">
-                    Physics Lab Record · 35 Pages Neat Handwriting
-                  </h3>
-                  <p className="text-[11px] font-bold text-black/60 mt-0.5">
-                    Provided manual photocopy; neat blue ink required.
-                  </p>
-                </div>
-
-                {/* Money / Earning Indicator & Handover OTP */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <div className="bg-white p-2 brutal-border">
-                    <span className="text-[10px] uppercase font-bold text-black/60 block">Earning</span>
-                    <span className="text-base font-black text-taskGreen">₹350 Paid</span>
+              <div className="space-y-3">
+                <div className="brutal-border bg-taskOffWhite p-3.5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-taskYellow brutal-border flex items-center justify-center font-black text-xs shrink-0">
+                    1
                   </div>
+                  <div>
+                    <h4 className="font-black text-xs uppercase text-taskBlack">Post Your Task</h4>
+                    <p className="text-[11px] font-bold text-black/60 leading-snug">
+                      Specify number of pages, subject, charts, PPT slides, or campus errand details.
+                    </p>
+                  </div>
+                </div>
 
-                  <div className="bg-taskYellow p-2 brutal-border">
-                    <span className="text-[10px] uppercase font-bold text-black/70 block">Handover OTP</span>
-                    <span className="text-base font-mono font-black text-taskBlack tracking-wider">
-                      4827
-                    </span>
+                <div className="brutal-border bg-taskOffWhite p-3.5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-taskBlue brutal-border flex items-center justify-center font-black text-xs shrink-0">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-black text-xs uppercase text-taskBlack">Connect With Peers Nearby</h4>
+                    <p className="text-[11px] font-bold text-black/60 leading-snug">
+                      Students in your college or campus area accept your task.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="brutal-border bg-taskOffWhite p-3.5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-taskPink brutal-border flex items-center justify-center font-black text-xs shrink-0">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="font-black text-xs uppercase text-taskBlack">Handover with 4-Digit OTP</h4>
+                    <p className="text-[11px] font-bold text-black/60 leading-snug">
+                      Meet at your library or canteen. Inspect the work, verify with a secret 4-digit code.
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Completion Indicator */}
-              <div className="bg-taskGreen/20 brutal-border p-2.5 flex items-center justify-between text-xs font-black text-taskBlack">
+              <div className="bg-taskGreen/20 brutal-border p-3 flex items-center justify-between text-xs font-black text-taskBlack">
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4 text-green-700 stroke-[3]" />
-                  <span>Handover Verified & Completed</span>
+                  <ShieldCheck className="w-4 h-4 text-green-700 stroke-[3]" />
+                  <span>Strict Academic Honor Code</span>
                 </div>
-                <span className="text-[10px] uppercase text-black/60 font-mono">0.8 km away</span>
+                <span className="text-[10px] uppercase font-mono text-black/60">Legitimate Services</span>
               </div>
             </div>
           </div>

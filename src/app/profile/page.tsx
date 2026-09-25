@@ -166,14 +166,18 @@ export default function ProfilePage() {
             Campus Skills
           </h3>
           <div className="flex flex-wrap gap-2">
-            {(user.skills?.length ? user.skills : ['Handwriting', 'Design', 'Video Editing', 'PowerPoint', 'Record Writing']).map((sk) => (
-              <span
-                key={sk}
-                className="sticker-tag bg-white px-2.5 py-1 text-xs font-bold"
-              >
-                {sk}
-              </span>
-            ))}
+            {user.skills?.length ? (
+              user.skills.map((sk) => (
+                <span
+                  key={sk}
+                  className="sticker-tag bg-white px-2.5 py-1 text-xs font-bold"
+                >
+                  {sk}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs font-bold text-black/50">No skills selected yet</span>
+            )}
           </div>
         </div>
 
@@ -183,31 +187,32 @@ export default function ProfilePage() {
             Peer Reviews &amp; Recommendations
           </h3>
 
-          <div className="space-y-3">
-            <div className="p-4 brutal-border bg-taskOffWhite space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase text-taskBlack">
-                  Rohit Sharma · SNIST ECE
-                </span>
-                <span className="text-xs font-black text-yellow-500">★★★★★</span>
-              </div>
-              <p className="text-xs font-bold text-black/80 italic">
-                &quot;Very neat work! Delivered 2 hours before the deadline at Block C cafeteria. Verified by our lab faculty.&quot;
+          {reviews.length === 0 ? (
+            <div className="p-5 brutal-border bg-taskOffWhite text-center space-y-1">
+              <p className="text-xs font-black uppercase text-taskBlack">No reviews yet</p>
+              <p className="text-[11px] font-bold text-black/60">
+                Complete your first campus task to earn ratings and reviews from student peers!
               </p>
             </div>
-
-            <div className="p-4 brutal-border bg-taskOffWhite space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase text-taskBlack">
-                  Ananya Verma · VNR VJIET
-                </span>
-                <span className="text-xs font-black text-yellow-500">★★★★★</span>
-              </div>
-              <p className="text-xs font-bold text-black/80 italic">
-                &quot;Delivered early and charts were drawn strictly per engineering guidelines. Great campus peer!&quot;
-              </p>
+          ) : (
+            <div className="space-y-3">
+              {reviews.map((rev) => (
+                <div key={rev.id} className="p-4 brutal-border bg-taskOffWhite space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-taskBlack">
+                      Verified Student Peer
+                    </span>
+                    <span className="text-xs font-black text-yellow-500">
+                      {'★'.repeat(rev.rating)}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-black/80 italic">
+                    &quot;{rev.comment}&quot;
+                  </p>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Privacy Note */}

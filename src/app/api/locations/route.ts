@@ -7,18 +7,21 @@ export async function GET(req: NextRequest) {
     const countryId = searchParams.get('countryId') || undefined;
     const stateId = searchParams.get('stateId') || undefined;
     const cityId = searchParams.get('cityId') || undefined;
+    const area = searchParams.get('area') || undefined;
     const collegeId = searchParams.get('collegeId') || undefined;
 
     const countries = db.getCountries();
     const states = db.getStates(countryId);
     const cities = db.getCities(stateId);
-    const colleges = db.getColleges(cityId, true); // Active only
+    const areas = db.getAreas(cityId);
+    const colleges = db.getColleges(cityId, true, area); // Active only, filtered by area
     const campuses = db.getCampuses(collegeId);
 
     return NextResponse.json({
       countries,
       states,
       cities,
+      areas,
       colleges,
       campuses,
     });

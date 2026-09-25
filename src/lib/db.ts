@@ -101,13 +101,24 @@ export const db = {
     return data.cities.filter((c) => c.state_id === stateId);
   },
 
-  getColleges(cityId?: string, activeOnly: boolean = false): College[] {
+  getColleges(cityId?: string, activeOnly: boolean = false, area?: string): College[] {
     const data = loadDb();
     return data.colleges.filter((c) => {
       const matchCity = !cityId || c.city_id === cityId;
       const matchActive = !activeOnly || c.active;
-      return matchCity && matchActive;
+      const matchArea = !area || area === 'all' || c.area === area;
+      return matchCity && matchActive && matchArea;
     });
+  },
+
+  getAreas(cityId?: string): string[] {
+    const data = loadDb();
+    const cityColleges = data.colleges.filter((c) => !cityId || c.city_id === cityId);
+    const set = new Set<string>();
+    cityColleges.forEach((c) => {
+      if (c.area) set.add(c.area);
+    });
+    return Array.from(set);
   },
 
   getCollegeById(id: string): College | undefined {
@@ -238,12 +249,12 @@ export const db = {
     return data.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
   },
 
-  createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at' | 'last_login_at'>): User {
+  createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at' | 'last_login_at'> & { id?: string }): User {
     const data = loadDb();
     const now = new Date().toISOString();
     const newUser: User = {
       ...user,
-      id: `usr-${Date.now().toString(36)}`,
+      id: user.id || `usr-${Date.now().toString(36)}`,
       created_at: now,
       updated_at: now,
       last_login_at: now

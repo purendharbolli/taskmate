@@ -149,11 +149,15 @@ export default function PublicProfilePage() {
             Verified Skills
           </h3>
           <div className="flex flex-wrap gap-2">
-            {(user.skills?.length ? user.skills : ['Handwriting', 'Diagrams', 'PowerPoint', 'Record Writing']).map((sk) => (
-              <span key={sk} className="sticker-tag bg-taskOffWhite px-2.5 py-1 text-xs font-bold">
-                {sk}
-              </span>
-            ))}
+            {user.skills?.length ? (
+              user.skills.map((sk) => (
+                <span key={sk} className="sticker-tag bg-taskOffWhite px-2.5 py-1 text-xs font-bold">
+                  {sk}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs font-bold text-black/50">No skills added yet</span>
+            )}
           </div>
         </div>
 
@@ -162,18 +166,11 @@ export default function PublicProfilePage() {
           <h3 className="text-xs font-black uppercase tracking-wider text-black/60 mb-3">
             Recent Peer Reviews
           </h3>
-          <div className="space-y-3">
-            <div className="p-4 brutal-border bg-taskOffWhite space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase text-taskBlack">
-                  Verified Student Peer
-                </span>
-                <span className="text-xs font-black text-yellow-500">★★★★★</span>
-              </div>
-              <p className="text-xs font-bold text-black/80 italic">
-                &quot;Very neat work. Delivered before the lab session at Block C!&quot;
-              </p>
-            </div>
+          <div className="p-4 brutal-border bg-taskOffWhite text-center space-y-1">
+            <p className="text-xs font-black uppercase text-taskBlack">No reviews yet</p>
+            <p className="text-[11px] font-bold text-black/60">
+              Reviews will appear here after completing campus tasks.
+            </p>
           </div>
         </div>
 

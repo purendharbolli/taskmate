@@ -55,6 +55,8 @@ export interface City {
 export interface College {
   id: string;
   city_id: string;
+  area?: string;
+  category_type?: string; // 'B.Tech / Engineering' | 'Degree & PG' | 'Pharmacy' | 'University & Autonomous'
   name: string;
   short_name?: string;
   address: string;

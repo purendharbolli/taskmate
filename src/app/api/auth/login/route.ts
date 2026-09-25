@@ -42,7 +42,23 @@ export async function POST(req: NextRequest) {
       redirectTo: user.onboarding_completed ? '/dashboard' : '/onboarding',
     });
 
-    res.cookies.set('taskmate_user_id', user.id, {
+    const sessionToken = Buffer.from(
+      JSON.stringify({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
+    ).toString('base64');
+
+    res.cookies.set('taskmate_user_id', sessionToken, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+      httpOnly: false,
+      sameSite: 'lax',
+    });
+
+    res.cookies.set('taskmate_user_email', user.email, {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       httpOnly: false,

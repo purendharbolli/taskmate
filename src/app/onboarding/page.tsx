@@ -12,15 +12,20 @@ import {
   Sparkles,
   HelpCircle,
   Briefcase,
-  AlertCircle
+  AlertCircle,
+  GraduationCap
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
-import { State, City, College, Campus } from '@/lib/types';
+import { State, City, College } from '@/lib/types';
 import clsx from 'clsx';
 
 export default function OnboardingPage() {
   const router = useRouter();
+
+  // Current authenticated user session details
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
 
   // 4 Sequential Steps
   const [currentStep, setCurrentStep] = useState(1);
@@ -30,14 +35,16 @@ export default function OnboardingPage() {
   // Cascading Location Hierarchy from Database
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [areas, setAreas] = useState<string[]>([]);
   const [colleges, setColleges] = useState<College[]>([]);
-  const [campuses, setCampuses] = useState<Campus[]>([]);
 
   // Step 1: "Where do you study?"
   const [selectedState, setSelectedState] = useState('st-tg'); // Telangana default
   const [selectedCity, setSelectedCity] = useState('city-hyd'); // Hyderabad default
-  const [selectedCollege, setSelectedCollege] = useState('');
-  const [selectedCampus, setSelectedCampus] = useState('');
+  const [selectedArea, setSelectedArea] = useState(''); // Area in city (e.g. Ghatkesar, Uppal)
+  const [selectedCollege, setSelectedCollege] = useState(''); // Empty by default! Not SNIST!
+  const [isCustomCollege, setIsCustomCollege] = useState(false);
+  const [customCollegeName, setCustomCollegeName] = useState('');
 
   // Step 2: "Tell us about yourself"
   const [name, setName] = useState('');
@@ -67,9 +74,9 @@ export default function OnboardingPage() {
     'Campus Errands',
   ];
 
-  // Initial load: Fetch States & Cities from DB
+  // Initial load: Fetch States, Cities & Areas from DB
   useEffect(() => {
-    fetch('/api/locations')
+    fetch('/api/locations?cityId=city-hyd')
       .then((res) => res.json())
       .then((data) => {
         if (data.states) setStates(data.states);
@@ -77,18 +84,23 @@ export default function OnboardingPage() {
           const defaultCities = data.cities.filter((c: City) => c.state_id === 'st-tg');
           setCities(defaultCities);
         }
+        if (data.areas) setAreas(data.areas);
+        if (data.colleges) {
+          setColleges(data.colleges);
+        }
       })
       .catch((err) => console.error(err));
 
-    // Also fetch current user to prefill name
+    // Also fetch current user session
     fetch('/api/auth/session')
       .then((res) => res.json())
       .then((data) => {
         if (data.user) {
+          setCurrentUserId(data.user.id || '');
+          setCurrentUserEmail(data.user.email || '');
           setName(data.user.name || '');
           setAvatar(data.user.avatar || '');
           if (data.user.onboarding_completed) {
-            // Already completed onboarding
             router.push('/dashboard');
           }
         }
@@ -99,48 +111,52 @@ export default function OnboardingPage() {
   const handleStateChange = (stateId: string) => {
     setSelectedState(stateId);
     setSelectedCity('');
+    setSelectedArea('');
     setSelectedCollege('');
-    setSelectedCampus('');
+    setIsCustomCollege(false);
+    setCustomCollegeName('');
     fetch(`/api/locations?stateId=${stateId}`)
       .then((res) => res.json())
       .then((data) => {
         setCities(data.cities || []);
+        setAreas([]);
+        setColleges([]);
       });
   };
 
-  // When City Changes -> Fetch Colleges
-  useEffect(() => {
-    if (selectedCity) {
-      fetch(`/api/locations?cityId=${selectedCity}`)
+  // When City Changes -> Fetch Areas & Colleges
+  const handleCityChange = (cityId: string) => {
+    setSelectedCity(cityId);
+    setSelectedArea('');
+    setSelectedCollege('');
+    setIsCustomCollege(false);
+    setCustomCollegeName('');
+    if (cityId) {
+      fetch(`/api/locations?cityId=${cityId}`)
         .then((res) => res.json())
         .then((data) => {
+          setAreas(data.areas || []);
           setColleges(data.colleges || []);
-          if (data.colleges && data.colleges.length > 0 && !selectedCollege) {
-            setSelectedCollege(data.colleges[0].id);
-          }
         });
     } else {
+      setAreas([]);
       setColleges([]);
-      setSelectedCollege('');
     }
-  }, [selectedCity]);
+  };
 
-  // When College Changes -> Fetch Campuses
-  useEffect(() => {
-    if (selectedCollege) {
-      fetch(`/api/locations?collegeId=${selectedCollege}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setCampuses(data.campuses || []);
-          if (data.campuses && data.campuses.length > 0) {
-            setSelectedCampus(data.campuses[0].id);
-          }
-        });
-    } else {
-      setCampuses([]);
-      setSelectedCampus('');
-    }
-  }, [selectedCollege]);
+  // When Area Changes -> Fetch / Filter Colleges
+  const handleAreaChange = (area: string) => {
+    setSelectedArea(area);
+    setSelectedCollege('');
+    setIsCustomCollege(false);
+    setCustomCollegeName('');
+    const query = area ? `/api/locations?cityId=${selectedCity}&area=${encodeURIComponent(area)}` : `/api/locations?cityId=${selectedCity}`;
+    fetch(query)
+      .then((res) => res.json())
+      .then((data) => {
+        setColleges(data.colleges || []);
+      });
+  };
 
   const toggleSkill = (skill: string) => {
     if (selectedSkills.includes(skill)) {
@@ -152,10 +168,21 @@ export default function OnboardingPage() {
 
   // Navigation handlers
   const handleNextFromStep1 = () => {
-    if (!selectedState || !selectedCity || !selectedCollege) {
-      setError('Please select your state, city, and college to continue.');
+    if (!selectedState || !selectedCity) {
+      setError('Please select your state and city.');
       return;
     }
+
+    if (isCustomCollege) {
+      if (!customCollegeName.trim()) {
+        setError('Please enter your college name or choose from the list.');
+        return;
+      }
+    } else if (!selectedCollege) {
+      setError('Please select your college from the list, or select "Other" to type your college name.');
+      return;
+    }
+
     setError(null);
     setCurrentStep(2);
   };
@@ -187,13 +214,18 @@ export default function OnboardingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          user_id: currentUserId,
+          email: currentUserEmail,
           state_id: selectedState,
           city_id: selectedCity,
-          college_id: selectedCollege,
-          campus_id: selectedCampus,
+          area: selectedArea,
+          college_id: isCustomCollege ? 'custom' : selectedCollege,
+          custom_college_name: customCollegeName.trim(),
           name: name.trim(),
           bio: bio.trim(),
           skills: selectedSkills,
+          need_help: needHelp,
+          want_to_earn: wantToEarn,
           complete: true,
         }),
       });
@@ -211,6 +243,21 @@ export default function OnboardingPage() {
   };
 
   const selectedCollegeObj = colleges.find((c) => c.id === selectedCollege);
+  const collegeDisplayTitle = isCustomCollege
+    ? customCollegeName
+    : selectedCollegeObj?.name || 'Your College';
+
+  // Group colleges by category type (Degree, B.Tech, Pharma, University)
+  const categoriesList = ['B.Tech / Engineering', 'Degree & PG', 'Pharmacy', 'University & Autonomous'];
+  const groupedColleges = categoriesList.map((category) => ({
+    label: category,
+    items: colleges.filter((c) => c.category_type === category),
+  })).filter((group) => group.items.length > 0);
+
+  // Colleges without a specific category tag
+  const uncategorizedColleges = colleges.filter(
+    (c) => !c.category_type || !categoriesList.includes(c.category_type)
+  );
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
@@ -252,79 +299,144 @@ export default function OnboardingPage() {
                 Where do you study?
               </h2>
               <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
-                TaskMate is strictly hyperlocal. Tasks are shown only to students in your area.
+                TaskMate is strictly hyperlocal. Tasks are shown only to students in your area and campus.
               </p>
             </div>
 
             <div className="space-y-4">
-              {/* State Dropdown */}
-              <div>
-                <label className="block text-xs font-black uppercase mb-1">State</label>
-                <select
-                  value={selectedState}
-                  onChange={(e) => handleStateChange(e.target.value)}
-                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
-                >
-                  <option value="">Select State</option>
-                  {states.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* City Dropdown */}
-              <div>
-                <label className="block text-xs font-black uppercase mb-1">City</label>
-                <select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  disabled={!selectedState}
-                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
-                >
-                  <option value="">Select City</option>
-                  {cities.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* College Dropdown */}
-              <div>
-                <label className="block text-xs font-black uppercase mb-1">College / University</label>
-                <select
-                  value={selectedCollege}
-                  onChange={(e) => setSelectedCollege(e.target.value)}
-                  disabled={!selectedCity}
-                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
-                >
-                  <option value="">Select College</option>
-                  {colleges.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.short_name || 'Campus'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Campus Dropdown */}
-              {campuses.length > 0 && (
+              {/* State & City Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-black uppercase mb-1">Campus</label>
+                  <label className="block text-xs font-black uppercase mb-1">State</label>
                   <select
-                    value={selectedCampus}
-                    onChange={(e) => setSelectedCampus(e.target.value)}
-                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
+                    value={selectedState}
+                    onChange={(e) => handleStateChange(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold bg-white"
                   >
-                    {campuses.map((cam) => (
-                      <option key={cam.id} value={cam.id}>
-                        {cam.name}
+                    <option value="">Select State</option>
+                    {states.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase mb-1">City</label>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                    disabled={!selectedState}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold bg-white"
+                  >
+                    <option value="">Select City</option>
+                    {cities.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Area in Hyderabad / City Selector */}
+              {areas.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-black uppercase">
+                      Select Area (e.g. Ghatkesar, Uppal, Kukatpally)
+                    </label>
+                    <span className="text-[10px] font-bold text-black/50">
+                      {selectedArea ? 'Filtering by area' : 'All areas shown'}
+                    </span>
+                  </div>
+                  <select
+                    value={selectedArea}
+                    onChange={(e) => handleAreaChange(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold bg-white"
+                  >
+                    <option value="">-- All Areas in Hyderabad --</option>
+                    {areas.map((a) => (
+                      <option key={a} value={a}>
+                        📍 {a}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* College Dropdown */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-black uppercase">
+                    Select College / University
+                  </label>
+                  <span className="text-[10px] font-bold text-black/50">
+                    {colleges.length} colleges available
+                  </span>
+                </div>
+
+                <select
+                  value={isCustomCollege ? 'custom' : selectedCollege}
+                  onChange={(e) => {
+                    if (e.target.value === 'custom') {
+                      setIsCustomCollege(true);
+                      setSelectedCollege('custom');
+                    } else {
+                      setIsCustomCollege(false);
+                      setSelectedCollege(e.target.value);
+                    }
+                  }}
+                  disabled={!selectedCity}
+                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold bg-white"
+                >
+                  <option value="">-- Select Your College --</option>
+
+                  {/* Grouped by degree stream */}
+                  {groupedColleges.map((group) => (
+                    <optgroup key={group.label} label={`── ${group.label.toUpperCase()} ──`}>
+                      {group.items.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} {c.area ? `(${c.area})` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+
+                  {uncategorizedColleges.length > 0 && (
+                    <optgroup label="── OTHER COLLEGES ──">
+                      {uncategorizedColleges.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  <option value="custom" className="font-bold text-blue-700">
+                    ✏️ Other — Type My College Name...
+                  </option>
+                </select>
+              </div>
+
+              {/* Custom College Input if 'custom' is selected */}
+              {isCustomCollege && (
+                <div className="p-4 brutal-border bg-taskYellow/20 space-y-2">
+                  <label className="block text-xs font-black uppercase text-taskBlack">
+                    Enter Your College / University Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Government Degree College, Anurag Pharmacy, etc."
+                    value={customCollegeName}
+                    onChange={(e) => setCustomCollegeName(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold bg-white"
+                  />
+                  <p className="text-[11px] text-taskBlack/70 font-semibold">
+                    Degree, B.Tech, Pharmacy or University — your college will be added to your campus zone on TaskMate!
+                  </p>
                 </div>
               )}
             </div>
@@ -358,7 +470,7 @@ export default function OnboardingPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Priya Reddy"
+                  placeholder="e.g. Rahul Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
@@ -369,33 +481,33 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-black uppercase mb-1">Short Bio</label>
                 <textarea
                   rows={2}
-                  placeholder="e.g. 3rd year CSE student. Neat handwriting and quick with PPT design."
+                  placeholder="e.g. 3rd year student. Available for lab records, diagram charts, and errands around campus."
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold resize-none"
+                  className="w-full brutal-input py-2 px-3 text-xs sm:text-sm font-bold resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase mb-2">
-                  Skills you can help with
+                <label className="block text-xs font-black uppercase mb-1.5">
+                  Select Skills You Can Offer
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {availableSkills.map((skill) => {
-                    const active = selectedSkills.includes(skill);
+                    const selected = selectedSkills.includes(skill);
                     return (
                       <button
-                        type="button"
                         key={skill}
+                        type="button"
                         onClick={() => toggleSkill(skill)}
                         className={clsx(
-                          'px-3 py-1.5 text-xs font-black uppercase brutal-border transition-all',
-                          active
-                            ? 'bg-taskYellow brutal-shadow-sm'
-                            : 'bg-white text-black/70 hover:bg-taskOffWhite'
+                          'px-3 py-1 text-xs font-extrabold uppercase brutal-border transition-all select-none',
+                          selected
+                            ? 'bg-taskYellow brutal-shadow-sm translate-x-[1px] translate-y-[1px]'
+                            : 'bg-taskOffWhite hover:bg-white text-black/70'
                         )}
                       >
-                        {active ? '✓ ' : '+ '}
+                        {selected ? '✓ ' : '+ '}
                         {skill}
                       </button>
                     );
@@ -414,7 +526,7 @@ export default function OnboardingPage() {
                 <span>Back</span>
               </button>
               <BrutalButton variant="yellow" size="lg" onClick={handleNextFromStep2}>
-                <span>CONTINUE TO INTENT →</span>
+                <span>CONTINUE TO PREFERENCES →</span>
               </BrutalButton>
             </div>
           </div>
@@ -431,12 +543,12 @@ export default function OnboardingPage() {
                 How do you want to use TaskMate?
               </h2>
               <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
-                You can select both options and switch anytime.
+                You can select both. You can always change this later in settings.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: I Need Help */}
+              {/* Option: I Need Help */}
               <div
                 onClick={() => setNeedHelp(!needHelp)}
                 className={clsx(
@@ -459,11 +571,11 @@ export default function OnboardingPage() {
                 </div>
                 <h3 className="font-black text-sm uppercase text-taskBlack">I Need Help</h3>
                 <p className="text-xs font-bold text-black/70 leading-relaxed">
-                  I want to post tasks and get help with records, notes, charts, printing, and errands.
+                  I want to post tasks like notes transcription, printing, records, or errands for other students.
                 </p>
               </div>
 
-              {/* Option 2: I Want to Earn */}
+              {/* Option: I Want to Earn */}
               <div
                 onClick={() => setWantToEarn(!wantToEarn)}
                 className={clsx(
@@ -532,10 +644,11 @@ export default function OnboardingPage() {
                 </span>
               </div>
               <p className="text-xs font-bold text-black/70">
-                📍 {selectedCollegeObj?.name || 'Selected Campus'}
+                📍 {collegeDisplayTitle}
+                {selectedArea ? ` · ${selectedArea}` : ''}
               </p>
               <p className="text-[11px] font-bold text-black/60">
-                Mode: {needHelp && wantToEarn ? 'Requester & Earner' : needHelp ? 'Requester' : 'Earner'}
+                Role: {needHelp && wantToEarn ? 'Help & Earn (Both)' : needHelp ? 'Posting Tasks' : 'Earning on Campus'}
               </p>
             </div>
 
