@@ -14,8 +14,10 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const collegeId = searchParams.get('collegeId') || undefined;
+    const cityId = searchParams.get('cityId') || undefined;
     const categoryId = searchParams.get('categoryId') || undefined;
     const search = searchParams.get('search')?.toLowerCase() || undefined;
+    const budgetMin = searchParams.get('budgetMin') ? Number(searchParams.get('budgetMin')) : undefined;
     const budgetMax = searchParams.get('budgetMax') ? Number(searchParams.get('budgetMax')) : undefined;
     const status = searchParams.get('status') || undefined;
     const requesterId = searchParams.get('requesterId') || undefined;
@@ -27,9 +29,11 @@ export async function GET(req: NextRequest) {
       try {
         const suTasks = await getSupabaseTasks({
           collegeId,
+          cityId,
           categoryId,
           requesterId,
           status,
+          budgetMin,
           budgetMax,
         });
         if (suTasks && suTasks.length > 0) {
@@ -44,12 +48,16 @@ export async function GET(req: NextRequest) {
     if (tasks.length === 0) {
       tasks = db.getTasks({
         collegeId,
+        cityId,
         categoryId,
         search,
         budgetMax,
         status,
         requesterId,
       });
+      if (budgetMin) {
+        tasks = tasks.filter((t) => t.budget >= budgetMin);
+      }
     } else if (search) {
       tasks = tasks.filter(
         (t) =>
@@ -60,6 +68,7 @@ export async function GET(req: NextRequest) {
 
     const categories = db.getCategories();
     const colleges = db.getColleges();
+    const cities = db.getCities();
 
     const enrichedTasks = await Promise.all(
       tasks.map(async (t) => {
@@ -79,7 +88,12 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    return NextResponse.json({ tasks: enrichedTasks });
+    return NextResponse.json({
+      tasks: enrichedTasks,
+      categories,
+      colleges,
+      cities,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

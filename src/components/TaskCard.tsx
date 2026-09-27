@@ -1,39 +1,101 @@
 import React from 'react';
 import Link from 'next/link';
-import { Clock, MapPin, Star, FileText, ArrowRight } from 'lucide-react';
+import {
+  Clock,
+  MapPin,
+  FileText,
+  ArrowRight,
+  Paperclip,
+  ExternalLink,
+  GraduationCap,
+  Sparkles,
+  Building2,
+} from 'lucide-react';
 import { BrutalBadge } from './ui/BrutalBadge';
 import { Task } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 
-interface TaskCardProps {
+export interface TaskCardProps {
   task: Task;
   categoryName?: string;
   collegeName?: string;
+  cityName?: string;
+  proximity?: 'own_college' | 'nearby' | 'other';
   variant?: 'yellow' | 'blue' | 'pink' | 'white';
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   categoryName = 'Academic Help',
-  collegeName = 'SNIST',
+  collegeName,
+  cityName,
+  proximity = 'other',
   variant = 'white',
 }) => {
+  const resolvedCollege = collegeName || task.college?.short_name || task.college?.name || 'Campus';
+
   const bgStyles = {
-    yellow: 'bg-taskYellow/20 hover:bg-taskYellow/30',
-    blue: 'bg-taskBlue/20 hover:bg-taskBlue/30',
-    pink: 'bg-taskPink/20 hover:bg-taskPink/30',
+    yellow: 'bg-taskYellow/10 hover:bg-taskYellow/25',
+    blue: 'bg-taskBlue/10 hover:bg-taskBlue/25',
+    pink: 'bg-taskPink/10 hover:bg-taskPink/25',
     white: 'bg-white hover:bg-[#FFFDF5]',
   };
 
+  const statusConfig: Record<string, { label: string; bg: string }> = {
+    OPEN: { label: 'OPEN', bg: 'bg-[#4DE680]' },
+    ASSIGNED: { label: 'ASSIGNED', bg: 'bg-[#8DD8FF]' },
+    IN_PROGRESS: { label: 'IN PROGRESS', bg: 'bg-[#8DD8FF]' },
+    READY_FOR_HANDOVER: { label: 'READY', bg: 'bg-[#FFD84D]' },
+    DELIVERED: { label: 'DELIVERED', bg: 'bg-[#D0BFFF]' },
+    COMPLETED: { label: 'COMPLETED', bg: 'bg-zinc-200' },
+    CANCELLED: { label: 'CLOSED', bg: 'bg-red-200' },
+  };
+
+  const status = statusConfig[task.status] || { label: task.status, bg: 'bg-zinc-100' };
+
+  const isOwnCollege = proximity === 'own_college';
+
   return (
     <div
-      className={`brutal-border brutal-shadow brutal-card-hover p-4 md:p-5 flex flex-col justify-between transition-all ${bgStyles[variant]}`}
+      className={`brutal-border brutal-shadow brutal-card-hover p-4 md:p-5 flex flex-col justify-between transition-all relative ${bgStyles[variant]} ${
+        isOwnCollege ? 'ring-2 ring-black bg-[#FFFEEA]/60' : ''
+      }`}
     >
       <div>
-        {/* Top Badges */}
+        {/* Top Hierarchy & Status Row */}
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          {/* Proximity / Scope Badge */}
+          {proximity === 'own_college' && (
+            <span className="inline-flex items-center gap-1 bg-[#FFD84D] text-black border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase tracking-wide shadow-[1.5px_1.5px_0px_0px_#000]">
+              <Sparkles className="w-3 h-3 fill-black text-black" />
+              FROM YOUR COLLEGE
+            </span>
+          )}
+          {proximity === 'nearby' && (
+            <span className="inline-flex items-center gap-1 bg-[#8DD8FF] text-black border border-black px-2 py-0.5 text-[10px] font-black uppercase tracking-wide shadow-[1.5px_1.5px_0px_0px_#000]">
+              <MapPin className="w-3 h-3 stroke-[2.5]" />
+              NEARBY {cityName ? `(${cityName})` : ''}
+            </span>
+          )}
+          {proximity === 'other' && (
+            <span className="inline-flex items-center gap-1 bg-white text-black/70 border border-black/30 px-2 py-0.5 text-[10px] font-bold uppercase">
+              <Building2 className="w-3 h-3 stroke-[2]" />
+              OTHER CAMPUS
+            </span>
+          )}
+
+          {/* Current Status Badge */}
+          <span
+            className={`border border-black px-2 py-0.5 text-[10px] font-black uppercase ${status.bg}`}
+          >
+            {status.label}
+          </span>
+        </div>
+
+        {/* Category, Posted Time & Price Tag */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <BrutalBadge variant="yellow" size="sm" className="truncate max-w-[140px]">
+            <BrutalBadge variant="yellow" size="sm" className="truncate max-w-[130px]">
               {categoryName}
             </BrutalBadge>
             <span className="text-[10px] font-bold text-black/60 bg-black/5 px-1.5 py-0.5 border border-black/15">
@@ -41,53 +103,81 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </span>
           </div>
 
-          <span className="brutal-border bg-taskYellow px-2.5 py-1 text-sm font-black brutal-shadow-sm">
+          <span className="brutal-border bg-taskYellow px-2.5 py-1 text-sm font-black brutal-shadow-sm whitespace-nowrap">
             ₹{task.budget}
           </span>
         </div>
 
         {/* Task Title */}
-        <h3 className="font-black text-lg text-taskBlack line-clamp-2 mb-2 leading-snug">
+        <h3 className="font-black text-base sm:text-lg text-taskBlack line-clamp-2 mb-2 leading-snug">
           {task.title}
         </h3>
 
-        {/* Quantity / Pages if present */}
-        {task.quantity && (
-          <div className="flex items-center gap-1.5 text-xs font-bold text-taskBlack/80 mb-2">
-            <FileText className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="bg-white px-2 py-0.5 brutal-border text-[11px]">
-              {task.quantity}
-            </span>
-          </div>
-        )}
+        {/* Work Volume (Pages/Slides) & Attachments Indicator */}
+        <div className="flex items-center gap-2 flex-wrap mb-2.5">
+          {task.quantity && (
+            <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-white px-2 py-0.5 border border-black">
+              <FileText className="w-3 h-3 stroke-[2.5]" />
+              <span>{task.quantity}</span>
+            </div>
+          )}
 
-        {/* Location & College */}
-        <div className="flex items-center gap-1.5 text-xs font-bold text-taskBlack/80 mb-1.5">
-          <MapPin className="w-3.5 h-3.5 stroke-[2.5] text-taskBlack" />
-          <span className="truncate">{task.location || collegeName}</span>
-          {task.distance_approx && (
-            <span className="text-taskBlack/60">· {task.distance_approx}</span>
+          {/* Attachment indicators */}
+          {task.files && task.files.length > 0 && (
+            <div
+              className="inline-flex items-center gap-1 text-[11px] font-black bg-white px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_#000]"
+              title={`${task.files.length} attachment(s) available`}
+            >
+              <Paperclip className="w-3 h-3 stroke-[2.5] text-black" />
+              <span>
+                {task.files.length} {task.files.length === 1 ? 'file' : 'files'}
+              </span>
+            </div>
+          )}
+
+          {task.google_drive_link && (
+            <div
+              className="inline-flex items-center gap-1 text-[11px] font-bold bg-blue-50 text-blue-800 px-2 py-0.5 border border-blue-300"
+              title="Reference materials available on Google Drive"
+            >
+              <ExternalLink className="w-3 h-3 stroke-[2.5]" />
+              <span>Drive Link</span>
+            </div>
           )}
         </div>
 
+        {/* College & Campus Location */}
+        <div className="space-y-1 mb-3 text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-taskBlack">
+            <GraduationCap className="w-3.5 h-3.5 stroke-[2.5] shrink-0 text-taskBlack" />
+            <span className="truncate">{resolvedCollege}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 font-medium text-taskBlack/70">
+            <MapPin className="w-3.5 h-3.5 stroke-[2] shrink-0 text-taskBlack/60" />
+            <span className="truncate">{task.location || 'Campus Meeting Point'}</span>
+            {task.distance_approx && (
+              <span className="text-taskBlack/50 shrink-0">· {task.distance_approx}</span>
+            )}
+          </div>
+        </div>
+
         {/* Deadline */}
-        <div className="flex items-center gap-1.5 text-xs font-bold text-red-600 mb-3">
-          <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>Due {task.deadline}</span>
+        <div className="flex items-center gap-1.5 text-xs font-black text-red-600 mb-3 bg-red-50 border border-red-200 px-2 py-1">
+          <Clock className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+          <span className="truncate">Due: {task.deadline}</span>
         </div>
       </div>
 
       {/* Footer / CTA */}
       <div className="pt-3 border-t-2 border-black/10 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 text-xs font-black">
-          <Star className="w-3.5 h-3.5 fill-taskYellow stroke-[2] text-black" />
-          <span>4.8</span>
-          <span className="text-taskBlack/50 font-medium ml-1 text-[11px]">campus</span>
-        </div>
+        <span className="text-[11px] font-bold text-taskBlack/60 uppercase">
+          {task.handover_method || 'Campus Delivery'}
+        </span>
 
         <Link
           href={`/tasks/${task.id}`}
-          className="brutal-btn bg-taskYellow px-3 py-1.5 text-xs font-extrabold uppercase flex items-center gap-1 hover:bg-[#ffe066]"
+          className="brutal-btn bg-taskYellow px-3 py-1.5 text-xs font-black uppercase flex items-center gap-1 hover:bg-[#ffe066] active:translate-x-[1px] active:translate-y-[1px]"
         >
           <span>VIEW TASK</span>
           <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -96,3 +186,4 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     </div>
   );
 };
+
