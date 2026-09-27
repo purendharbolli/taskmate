@@ -9,7 +9,7 @@ import {
   CheckCircle,
   MapPin,
   ShieldCheck,
-  Award
+  Award,
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
@@ -21,19 +21,20 @@ export default function PublicProfilePage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [college, setCollege] = useState<College | null>(null);
+  const [stats, setStats] = useState<{ tasks_posted: number; tasks_completed: number }>({
+    tasks_posted: 0,
+    tasks_completed: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In our prototype, fetch all users and find matching ID
-    fetch('/api/admin/users')
+    fetch(`/api/users/${userId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.users) {
-          const u = data.users.find((x: User) => x.id === userId);
-          if (u) {
-            setUser(u);
-            if (u.college) setCollege(u.college);
-          }
+        if (data.user) {
+          setUser(data.user);
+          if (data.college) setCollege(data.college);
+          if (data.stats) setStats(data.stats);
         }
         setLoading(false);
       })
@@ -64,6 +65,13 @@ export default function PublicProfilePage() {
     );
   }
 
+  const collegeName = college?.name || user.custom_college_name || 'Campus Student';
+  const areaCityText = user.area
+    ? `${user.area}, Hyderabad`
+    : college?.area
+    ? `${college.area}, Hyderabad`
+    : 'Hyderabad';
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-6">
       <Link
@@ -77,15 +85,27 @@ export default function PublicProfilePage() {
       <div className="bg-white brutal-border brutal-shadow-lg p-6 sm:p-8 space-y-6">
         {/* Header */}
         <div className="flex items-start gap-4">
-          <div className="w-20 h-20 brutal-border bg-taskYellow brutal-shadow flex items-center justify-center font-black text-3xl shrink-0">
-            {user.name.charAt(0)}
+          <div className="w-20 h-20 brutal-border bg-taskYellow brutal-shadow flex items-center justify-center font-black text-3xl shrink-0 uppercase">
+            {(user.nickname || user.name).charAt(0)}
           </div>
 
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                {user.name}
+                {user.nickname || user.name}
               </h1>
+
+              {user.nickname && user.nickname !== user.name && (
+                <span className="text-xs font-bold text-black/60 bg-taskOffWhite px-2 py-0.5 brutal-border">
+                  {user.name}
+                </span>
+              )}
+
+              {user.admin_verified && (
+                <BrutalBadge variant="yellow" size="sm">
+                  ⭐ TRUSTED BADGE
+                </BrutalBadge>
+              )}
               {user.college_verified && (
                 <BrutalBadge variant="green" size="sm">
                   ✓ VERIFIED STUDENT
@@ -93,13 +113,18 @@ export default function PublicProfilePage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-bold text-black/70">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{college?.name || 'SNIST — Hyderabad'}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-black/70">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-taskBlack" />
+                <strong>{collegeName}</strong>
+              </span>
+              <span>·</span>
+              <span className="text-black/80">{areaCityText}</span>
             </div>
 
             <p className="text-xs font-bold text-taskBlack/80 pt-1 leading-relaxed max-w-xl">
-              {user.bio || 'Active campus student helper. Fast on records, handwriting, and slide presentations.'}
+              {user.bio ||
+                'Active campus student helper. Fast on records, handwriting, and slide presentations.'}
             </p>
           </div>
         </div>
@@ -108,16 +133,16 @@ export default function PublicProfilePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="brutal-border bg-taskYellow/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              ★ {user.rating ? user.rating.toFixed(1) : '5.0'}
+              {stats.tasks_posted}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
-              Rating
+              Tasks Posted
             </span>
           </div>
 
           <div className="brutal-border bg-taskBlue/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              {user.completed_tasks || 0}
+              {stats.tasks_completed}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
               Tasks Completed
@@ -126,10 +151,10 @@ export default function PublicProfilePage() {
 
           <div className="brutal-border bg-taskGreen/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              ₹{user.earnings_total || 0}
+              ★ {user.rating ? user.rating.toFixed(1) : '5.0'}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
-              Earned on Campus
+              Peer Rating
             </span>
           </div>
 
@@ -151,7 +176,10 @@ export default function PublicProfilePage() {
           <div className="flex flex-wrap gap-2">
             {user.skills?.length ? (
               user.skills.map((sk) => (
-                <span key={sk} className="sticker-tag bg-taskOffWhite px-2.5 py-1 text-xs font-bold">
+                <span
+                  key={sk}
+                  className="sticker-tag bg-taskOffWhite px-2.5 py-1 text-xs font-bold brutal-border"
+                >
                   {sk}
                 </span>
               ))
@@ -175,8 +203,11 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Privacy Shield */}
-        <div className="p-3 brutal-border bg-taskOffWhite text-[11px] font-semibold text-black/60">
-          🔒 Private student details (personal email &amp; phone) are shielded by TaskMate Campus Privacy.
+        <div className="p-3 brutal-border bg-taskOffWhite text-[11px] font-semibold text-black/60 flex items-center justify-between">
+          <span>
+            🔒 Private student credentials (passwords &amp; recovery answers) are never exposed.
+          </span>
+          <ShieldCheck className="w-4 h-4 text-taskGreen shrink-0 stroke-[3]" />
         </div>
       </div>
     </div>

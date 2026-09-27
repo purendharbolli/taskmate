@@ -1,72 +1,152 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { User } from '@/lib/types';
+import { verifyPassword, sanitizeUser } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   try {
-    const { provider, email, name, avatar } = await req.json();
+    const body = await req.json();
+    const { action = 'login', email, password, name, avatar } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      return NextResponse.json(
+        { error: 'A valid email address is required.' },
+        { status: 400 }
+      );
     }
 
-    let user = db.getUserByEmail(email);
+    let user = db.getUserByEmail(cleanEmail);
 
-    if (!user) {
-      // Create new user with onboarding incomplete
-      const baseName = name || email.split('@')[0];
-      user = db.createUser({
-        name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
-        email: email.toLowerCase(),
-        avatar: avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(baseName)}&backgroundColor=ffd84d`,
-        auth_provider: provider === 'google' ? 'google' : 'email',
-        email_verified: true,
-        college_verified: false,
-        role: 'USER',
-        skills: [],
-        rating: 5.0,
-        completed_tasks: 0,
-        completion_rate: 100,
-        onboarding_completed: false,
-        onboarding_step: 1,
-        earnings_total: 0,
-        earnings_available: 0,
-        earnings_pending: 0,
-        spent_total: 0,
+    // ==========================================
+    // ACTION: SIGNUP
+    // ==========================================
+    if (action === 'signup') {
+      // 1. One unique TaskMate profile per email address.
+      // Prevent duplicate accounts using the same email.
+      if (user && (user.onboarding_completed || user.password_hash)) {
+        return NextResponse.json(
+          {
+            error: 'An account with this email already exists. Please log in with your password.',
+            accountExists: true,
+          },
+          { status: 409 }
+        );
+      }
+
+      // If user started onboarding previously but didn't finish, resume
+      if (!user) {
+        const baseName = name || cleanEmail.split('@')[0];
+        user = db.createUser({
+          name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+          nickname: baseName,
+          email: cleanEmail,
+          avatar:
+            avatar ||
+            `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
+              baseName
+            )}&backgroundColor=ffd84d`,
+          auth_provider: 'email',
+          email_verified: true,
+          college_verified: false,
+          admin_verified: false,
+          role: 'USER',
+          skills: [],
+          rating: 5.0,
+          completed_tasks: 0,
+          completion_rate: 100,
+          onboarding_completed: false,
+          onboarding_step: 1,
+          earnings_total: 0,
+          earnings_available: 0,
+          earnings_pending: 0,
+          spent_total: 0,
+        });
+      }
+
+      const res = NextResponse.json({
+        success: true,
+        user: sanitizeUser(user),
+        redirectTo: '/onboarding',
       });
+
+      setSessionCookies(res, user);
+      return res;
     }
+
+    // ==========================================
+    // ACTION: LOGIN
+    // ==========================================
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: 'No TaskMate account found for this email. Please switch to Create Account to get started.',
+          notFound: true,
+        },
+        { status: 404 }
+      );
+    }
+
+    // If user has a password set, require and verify it
+    if (user.password_hash) {
+      if (!password) {
+        return NextResponse.json(
+          { error: 'Please enter your password to log in.' },
+          { status: 400 }
+        );
+      }
+
+      const isValid = verifyPassword(password, user.password_hash);
+      if (!isValid) {
+        return NextResponse.json(
+          {
+            error: 'Incorrect password. Please try again or use Forgot Password to reset it.',
+            invalidPassword: true,
+          },
+          { status: 401 }
+        );
+      }
+    }
+
+    // Update last login timestamp
+    db.updateUser(user.id, {
+      last_login_at: new Date().toISOString(),
+    });
 
     const res = NextResponse.json({
       success: true,
-      user,
+      user: sanitizeUser(user),
       redirectTo: user.onboarding_completed ? '/dashboard' : '/onboarding',
     });
 
-    const sessionToken = Buffer.from(
-      JSON.stringify({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      })
-    ).toString('base64');
-
-    res.cookies.set('taskmate_user_id', sessionToken, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      httpOnly: false,
-      sameSite: 'lax',
-    });
-
-    res.cookies.set('taskmate_user_email', user.email, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      httpOnly: false,
-      sameSite: 'lax',
-    });
-
+    setSessionCookies(res, user);
     return res;
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+function setSessionCookies(res: NextResponse, user: any) {
+  const sessionToken = Buffer.from(
+    JSON.stringify({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    })
+  ).toString('base64');
+
+  res.cookies.set('taskmate_user_id', sessionToken, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: false,
+    sameSite: 'lax',
+  });
+
+  res.cookies.set('taskmate_user_email', user.email, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: false,
+    sameSite: 'lax',
+  });
 }

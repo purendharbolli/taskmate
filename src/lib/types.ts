@@ -1,21 +1,32 @@
 export type UserRole = 'USER' | 'MODERATOR' | 'ADMIN' | 'SUPER_ADMIN';
 
+export interface RecoveryQuestion {
+  question: string;
+  answer_hash: string;
+}
+
 export interface User {
   id: string;
   name: string;
+  nickname?: string;
   email: string;
   phone?: string;
   avatar: string;
   auth_provider: 'google' | 'email';
   provider_user_id?: string;
+  password_hash?: string;
+  recovery_questions?: RecoveryQuestion[];
   email_verified: boolean;
   college_verified: boolean;
+  admin_verified?: boolean;
   role: UserRole;
   country_id?: string;
   state_id?: string;
   city_id?: string;
+  area?: string;
   college_id?: string;
   campus_id?: string;
+  custom_college_name?: string;
   bio?: string;
   skills: string[];
   rating: number;

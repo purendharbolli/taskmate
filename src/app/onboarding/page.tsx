@@ -13,11 +13,18 @@ import {
   HelpCircle,
   Briefcase,
   AlertCircle,
-  GraduationCap
+  GraduationCap,
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  KeyRound,
+  User,
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { State, City, College } from '@/lib/types';
+import { STANDARD_RECOVERY_QUESTIONS } from '@/lib/security';
 import clsx from 'clsx';
 
 export default function OnboardingPage() {
@@ -42,11 +49,12 @@ export default function OnboardingPage() {
   const [selectedState, setSelectedState] = useState('st-tg'); // Telangana default
   const [selectedCity, setSelectedCity] = useState('city-hyd'); // Hyderabad default
   const [selectedArea, setSelectedArea] = useState(''); // Area in city (e.g. Ghatkesar, Uppal)
-  const [selectedCollege, setSelectedCollege] = useState(''); // Empty by default! Not SNIST!
+  const [selectedCollege, setSelectedCollege] = useState(''); // Empty by default!
   const [isCustomCollege, setIsCustomCollege] = useState(false);
   const [customCollegeName, setCustomCollegeName] = useState('');
 
   // Step 2: "Tell us about yourself"
+  const [nickname, setNickname] = useState('');
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState('');
@@ -55,7 +63,16 @@ export default function OnboardingPage() {
     'PowerPoint',
   ]);
 
-  // Step 3: "How do you want to use TaskMate?" (Allow both)
+  // Step 3: "Account Security & Credentials"
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [recoveryQ1, setRecoveryQ1] = useState(STANDARD_RECOVERY_QUESTIONS[0]);
+  const [recoveryA1, setRecoveryA1] = useState('');
+  const [recoveryQ2, setRecoveryQ2] = useState(STANDARD_RECOVERY_QUESTIONS[1]);
+  const [recoveryA2, setRecoveryA2] = useState('');
+
+  // Step 4: "Preferences & Confirmation"
   const [needHelp, setNeedHelp] = useState(true);
   const [wantToEarn, setWantToEarn] = useState(true);
 
@@ -99,6 +116,7 @@ export default function OnboardingPage() {
           setCurrentUserId(data.user.id || '');
           setCurrentUserEmail(data.user.email || '');
           setName(data.user.name || '');
+          setNickname(data.user.nickname || data.user.name?.split(' ')[0] || '');
           setAvatar(data.user.avatar || '');
           if (data.user.onboarding_completed) {
             router.push('/dashboard');
@@ -150,7 +168,9 @@ export default function OnboardingPage() {
     setSelectedCollege('');
     setIsCustomCollege(false);
     setCustomCollegeName('');
-    const query = area ? `/api/locations?cityId=${selectedCity}&area=${encodeURIComponent(area)}` : `/api/locations?cityId=${selectedCity}`;
+    const query = area
+      ? `/api/locations?cityId=${selectedCity}&area=${encodeURIComponent(area)}`
+      : `/api/locations?cityId=${selectedCity}`;
     fetch(query)
       .then((res) => res.json())
       .then((data) => {
@@ -166,7 +186,7 @@ export default function OnboardingPage() {
     }
   };
 
-  // Navigation handlers
+  // Step 1 Validation
   const handleNextFromStep1 = () => {
     if (!selectedState || !selectedCity) {
       setError('Please select your state and city.');
@@ -187,20 +207,43 @@ export default function OnboardingPage() {
     setCurrentStep(2);
   };
 
+  // Step 2 Validation
   const handleNextFromStep2 = () => {
+    if (!nickname.trim()) {
+      setError('Please enter a campus Nickname / Handle.');
+      return;
+    }
     if (!name.trim()) {
-      setError('Please provide your name.');
+      setError('Please provide your full name.');
       return;
     }
     setError(null);
     setCurrentStep(3);
   };
 
+  // Step 3 Validation (Password & Recovery Questions)
   const handleNextFromStep3 = () => {
-    if (!needHelp && !wantToEarn) {
-      setError('Please select at least one way you would like to use TaskMate.');
+    if (!password || password.length < 6) {
+      setError('Please set a password with at least 6 characters.');
       return;
     }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter.');
+      return;
+    }
+    if (!recoveryQ1 || !recoveryA1.trim()) {
+      setError('Please select and answer Security Recovery Question 1.');
+      return;
+    }
+    if (!recoveryQ2 || !recoveryA2.trim()) {
+      setError('Please select and answer Security Recovery Question 2.');
+      return;
+    }
+    if (recoveryQ1 === recoveryQ2) {
+      setError('Please choose two different recovery questions.');
+      return;
+    }
+
     setError(null);
     setCurrentStep(4);
   };
@@ -222,8 +265,14 @@ export default function OnboardingPage() {
           college_id: isCustomCollege ? 'custom' : selectedCollege,
           custom_college_name: customCollegeName.trim(),
           name: name.trim(),
+          nickname: nickname.trim(),
           bio: bio.trim(),
           skills: selectedSkills,
+          password: password,
+          recovery_questions: [
+            { question: recoveryQ1, answer: recoveryA1.trim() },
+            { question: recoveryQ2, answer: recoveryA2.trim() },
+          ],
           need_help: needHelp,
           want_to_earn: wantToEarn,
           complete: true,
@@ -247,14 +296,15 @@ export default function OnboardingPage() {
     ? customCollegeName
     : selectedCollegeObj?.name || 'Your College';
 
-  // Group colleges by category type (Degree, B.Tech, Pharma, University)
+  // Group colleges by category type
   const categoriesList = ['B.Tech / Engineering', 'Degree & PG', 'Pharmacy', 'University & Autonomous'];
-  const groupedColleges = categoriesList.map((category) => ({
-    label: category,
-    items: colleges.filter((c) => c.category_type === category),
-  })).filter((group) => group.items.length > 0);
+  const groupedColleges = categoriesList
+    .map((category) => ({
+      label: category,
+      items: colleges.filter((c) => c.category_type === category),
+    }))
+    .filter((group) => group.items.length > 0);
 
-  // Colleges without a specific category tag
   const uncategorizedColleges = colleges.filter(
     (c) => !c.category_type || !categoriesList.includes(c.category_type)
   );
@@ -265,7 +315,7 @@ export default function OnboardingPage() {
         {/* Progress Tracker (4 Steps) */}
         <div className="border-b-2 border-black/10 pb-4">
           <div className="flex items-center justify-between text-xs font-black uppercase text-taskBlack mb-2">
-            <span>Student Onboarding</span>
+            <span>Student Onboarding Setup</span>
             <span>Step {currentStep} of 4</span>
           </div>
           <div className="grid grid-cols-4 gap-2">
@@ -288,12 +338,12 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* STEP 1: "Where do you study?" */}
+        {/* STEP 1: "Where do you study?" (Location & College) */}
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
               <span className="sticker-tag bg-taskYellow px-2 py-0.5 text-xs font-black uppercase inline-block mb-1">
-                LOCATION
+                LOCATION &amp; COLLEGE
               </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
                 Where do you study?
@@ -393,7 +443,6 @@ export default function OnboardingPage() {
                 >
                   <option value="">-- Select Your College --</option>
 
-                  {/* Grouped by degree stream */}
                   {groupedColleges.map((group) => (
                     <optgroup key={group.label} label={`── ${group.label.toUpperCase()} ──`}>
                       {group.items.map((c) => (
@@ -449,32 +498,53 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* STEP 2: "Tell us about yourself" */}
+        {/* STEP 2: "Tell us about yourself" (Nickname, Name, Bio & Skills) */}
         {currentStep === 2 && (
           <div className="space-y-6">
             <div>
               <span className="sticker-tag bg-taskBlue px-2 py-0.5 text-xs font-black uppercase inline-block mb-1">
-                PROFILE
+                PROFILE IDENTITY
               </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                Tell us about yourself
+                Set Your Campus Identity
               </h2>
               <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
-                Your campus peers will see this profile when you post or apply for tasks.
+                Your nickname will be displayed publicly on tasks and peer reviews.
               </p>
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Rahul Sharma"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-black uppercase mb-1">
+                    Campus Nickname <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rohit, Sunny, Spark"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold bg-taskYellow/10"
+                  />
+                  <p className="text-[11px] text-taskBlack/60 font-semibold mt-1">
+                    Public handle shown to campus peers.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase mb-1">
+                    Full Legal Name <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rohit Sharma"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
+                  />
+                </div>
               </div>
 
               <div>
@@ -526,80 +596,131 @@ export default function OnboardingPage() {
                 <span>Back</span>
               </button>
               <BrutalButton variant="yellow" size="lg" onClick={handleNextFromStep2}>
-                <span>CONTINUE TO PREFERENCES →</span>
+                <span>CONTINUE TO SECURITY →</span>
               </BrutalButton>
             </div>
           </div>
         )}
 
-        {/* STEP 3: "How do you want to use TaskMate?" */}
+        {/* STEP 3: "Account Security & Credentials" (Password & 2 Recovery Questions) */}
         {currentStep === 3 && (
           <div className="space-y-6">
             <div>
               <span className="sticker-tag bg-taskPink px-2 py-0.5 text-xs font-black uppercase inline-block mb-1">
-                PREFERENCES
+                SECURITY SETUP
               </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase text-taskBlack">
-                How do you want to use TaskMate?
+                Password &amp; Recovery Questions
               </h2>
               <p className="text-xs sm:text-sm font-bold text-black/60 mt-1">
-                You can select both. You can always change this later in settings.
+                Set a secure password and configure 2 recovery questions for password recovery.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option: I Need Help */}
-              <div
-                onClick={() => setNeedHelp(!needHelp)}
-                className={clsx(
-                  'p-5 brutal-border cursor-pointer transition-all space-y-2 select-none',
-                  needHelp
-                    ? 'bg-taskYellow/40 brutal-shadow'
-                    : 'bg-white hover:bg-taskOffWhite opacity-80'
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl">🙋</span>
-                  <div
-                    className={clsx(
-                      'w-5 h-5 brutal-border flex items-center justify-center',
-                      needHelp ? 'bg-taskBlack text-white' : 'bg-white'
-                    )}
-                  >
-                    {needHelp && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+            <div className="space-y-4">
+              {/* Password Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-black uppercase mb-1">
+                    Set Account Password <span className="text-red-600">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Min 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full brutal-input py-2.5 px-3 pr-10 text-xs sm:text-sm font-bold"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-taskBlack/60 hover:text-taskBlack"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
-                <h3 className="font-black text-sm uppercase text-taskBlack">I Need Help</h3>
-                <p className="text-xs font-bold text-black/70 leading-relaxed">
-                  I want to post tasks like notes transcription, printing, records, or errands for other students.
+
+                <div>
+                  <label className="block text-xs font-black uppercase mb-1">
+                    Confirm Password <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    placeholder="Re-enter password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full brutal-input py-2.5 px-3 text-xs sm:text-sm font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* Recovery Questions Info */}
+              <div className="p-3 brutal-border bg-taskYellow/20 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-black text-taskBlack uppercase">
+                  <KeyRound className="w-4 h-4 text-taskBlack shrink-0" />
+                  <span>Password Recovery Questions</span>
+                </div>
+                <p className="text-[11px] font-bold text-taskBlack/70">
+                  These answers are encrypted and hashed. They will only ever be used if you need to recover or reset your password.
                 </p>
               </div>
 
-              {/* Option: I Want to Earn */}
-              <div
-                onClick={() => setWantToEarn(!wantToEarn)}
-                className={clsx(
-                  'p-5 brutal-border cursor-pointer transition-all space-y-2 select-none',
-                  wantToEarn
-                    ? 'bg-taskGreen/40 brutal-shadow'
-                    : 'bg-white hover:bg-taskOffWhite opacity-80'
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl">💼</span>
-                  <div
-                    className={clsx(
-                      'w-5 h-5 brutal-border flex items-center justify-center',
-                      wantToEarn ? 'bg-taskBlack text-white' : 'bg-white'
-                    )}
-                  >
-                    {wantToEarn && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                  </div>
-                </div>
-                <h3 className="font-black text-sm uppercase text-taskBlack">I Want to Earn</h3>
-                <p className="text-xs font-bold text-black/70 leading-relaxed">
-                  I want to complete tasks for peers in my free time and earn money on campus.
-                </p>
+              {/* Question 1 */}
+              <div className="space-y-2 p-3.5 brutal-border bg-taskOffWhite">
+                <label className="block text-xs font-black uppercase text-taskBlack">
+                  Recovery Question 1
+                </label>
+                <select
+                  value={recoveryQ1}
+                  onChange={(e) => setRecoveryQ1(e.target.value)}
+                  className="w-full brutal-input py-2 px-3 text-xs font-bold bg-white"
+                >
+                  {STANDARD_RECOVERY_QUESTIONS.map((q) => (
+                    <option key={q} value={q}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  required
+                  placeholder="Your answer to Question 1"
+                  value={recoveryA1}
+                  onChange={(e) => setRecoveryA1(e.target.value)}
+                  className="w-full brutal-input py-2 px-3 text-xs sm:text-sm font-bold bg-white"
+                />
+              </div>
+
+              {/* Question 2 */}
+              <div className="space-y-2 p-3.5 brutal-border bg-taskOffWhite">
+                <label className="block text-xs font-black uppercase text-taskBlack">
+                  Recovery Question 2
+                </label>
+                <select
+                  value={recoveryQ2}
+                  onChange={(e) => setRecoveryQ2(e.target.value)}
+                  className="w-full brutal-input py-2 px-3 text-xs font-bold bg-white"
+                >
+                  {STANDARD_RECOVERY_QUESTIONS.map((q) => (
+                    <option key={q} value={q} disabled={q === recoveryQ1}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  required
+                  placeholder="Your answer to Question 2"
+                  value={recoveryA2}
+                  onChange={(e) => setRecoveryA2(e.target.value)}
+                  className="w-full brutal-input py-2 px-3 text-xs sm:text-sm font-bold bg-white"
+                />
               </div>
             </div>
 
@@ -613,43 +734,61 @@ export default function OnboardingPage() {
                 <span>Back</span>
               </button>
               <BrutalButton variant="yellow" size="lg" onClick={handleNextFromStep3}>
-                <span>REVIEW & FINISH →</span>
+                <span>REVIEW &amp; CONFIRM →</span>
               </BrutalButton>
             </div>
           </div>
         )}
 
-        {/* STEP 4: "You're ready." */}
+        {/* STEP 4: "You're ready." (Confirmation & Final Submit) */}
         {currentStep === 4 && (
-          <div className="space-y-6 text-center py-4">
+          <div className="space-y-6 text-center py-2">
             <div className="w-16 h-16 bg-taskYellow brutal-border brutal-shadow mx-auto flex items-center justify-center text-3xl">
               🎓
             </div>
 
             <div className="space-y-1">
               <h2 className="text-3xl font-black uppercase text-taskBlack">
-                You&apos;re ready.
+                Confirm Your Profile
               </h2>
               <p className="text-xs sm:text-sm font-bold text-black/60 max-w-md mx-auto">
-                Welcome to TaskMate. Your campus marketplace profile has been configured.
+                Welcome to TaskMate! Review your campus profile setup before accessing the dashboard.
               </p>
             </div>
 
             {/* Profile Confirmation Card */}
-            <div className="brutal-border bg-taskOffWhite p-4 max-w-md mx-auto text-left space-y-2">
+            <div className="brutal-border bg-taskOffWhite p-5 max-w-md mx-auto text-left space-y-3">
               <div className="flex items-center justify-between border-b-2 border-black/10 pb-2">
-                <span className="font-black text-sm text-taskBlack">{name}</span>
-                <span className="bg-taskYellow px-2 py-0.5 text-[10px] font-black brutal-border">
-                  STUDENT
+                <div>
+                  <span className="font-black text-base text-taskBlack block">
+                    {nickname}
+                  </span>
+                  <span className="text-[11px] font-bold text-black/60">
+                    {name} ({currentUserEmail})
+                  </span>
+                </div>
+                <span className="bg-taskYellow px-2.5 py-1 text-[10px] font-black brutal-border">
+                  VERIFIED PROFILE
                 </span>
               </div>
-              <p className="text-xs font-bold text-black/70">
-                📍 {collegeDisplayTitle}
-                {selectedArea ? ` · ${selectedArea}` : ''}
-              </p>
-              <p className="text-[11px] font-bold text-black/60">
-                Role: {needHelp && wantToEarn ? 'Help & Earn (Both)' : needHelp ? 'Posting Tasks' : 'Earning on Campus'}
-              </p>
+
+              <div className="text-xs font-bold text-black/80 space-y-1">
+                <p>
+                  📍 <strong>Campus:</strong> {collegeDisplayTitle}
+                  {selectedArea ? ` · ${selectedArea}` : ''}
+                </p>
+                <p>
+                  🏙️ <strong>City:</strong> Hyderabad, Telangana
+                </p>
+                <p>
+                  🔒 <strong>Security:</strong> Password Protected &amp; 2 Recovery Questions Saved
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[11px] font-bold text-black/70">
+                <span>Privacy: Password &amp; answers never displayed</span>
+                <ShieldCheck className="w-4 h-4 text-taskGreen stroke-[3]" />
+              </div>
             </div>
 
             <div className="pt-4 flex flex-col items-center gap-2">
@@ -660,8 +799,16 @@ export default function OnboardingPage() {
                 onClick={handleCompleteOnboarding}
                 className="w-full max-w-md"
               >
-                <span>{loading ? 'SETTING UP...' : 'GO TO TASKMATE →'}</span>
+                <span>{loading ? 'SETTING UP ACCOUNT...' : 'GO TO TASKMATE →'}</span>
               </BrutalButton>
+              <button
+                type="button"
+                onClick={() => setCurrentStep(3)}
+                className="text-xs font-black uppercase text-taskBlack underline hover:text-black/60 flex items-center gap-1 pt-2"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Security Step</span>
+              </button>
             </div>
           </div>
         )}

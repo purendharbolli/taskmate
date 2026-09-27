@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { hashPassword, hashRecoveryAnswer, sanitizeUser } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,11 +23,13 @@ export async function POST(req: NextRequest) {
       user = db.createUser({
         id: body.user_id && body.user_id.startsWith('usr-') ? body.user_id : `usr-${Date.now()}`,
         name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+        nickname: body.nickname || baseName,
         email: email,
         avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}&backgroundColor=ffd84d`,
         auth_provider: 'email',
         email_verified: true,
         college_verified: false,
+        admin_verified: false,
         role: 'USER',
         skills: body.skills || [],
         rating: 5.0,
@@ -54,10 +57,13 @@ export async function POST(req: NextRequest) {
       custom_college_name,
       campus_id,
       name,
+      nickname,
       bio,
       skills,
+      password,
+      recovery_questions,
       college_email,
-      complete
+      complete,
     } = body;
 
     let finalCollegeId = college_id;
@@ -81,11 +87,32 @@ export async function POST(req: NextRequest) {
     if (step) updates.onboarding_step = step;
     if (state_id) updates.state_id = state_id;
     if (city_id) updates.city_id = city_id;
+    if (area) updates.area = area.trim();
     if (finalCollegeId) updates.college_id = finalCollegeId;
     if (campus_id) updates.campus_id = campus_id;
     if (name) updates.name = name.trim();
+    if (nickname) updates.nickname = nickname.trim();
     if (bio !== undefined) updates.bio = bio.trim();
     if (skills) updates.skills = skills;
+
+    // Secure password handling: Hash with PBKDF2 salt
+    if (password && typeof password === 'string' && password.length >= 6) {
+      updates.password_hash = hashPassword(password);
+    }
+
+    // Secure recovery questions handling: Hash each answer
+    if (Array.isArray(recovery_questions) && recovery_questions.length > 0) {
+      const validHashedQuestions = recovery_questions
+        .filter((rq: any) => rq && rq.question?.trim() && rq.answer?.trim())
+        .map((rq: any) => ({
+          question: rq.question.trim(),
+          answer_hash: hashRecoveryAnswer(rq.answer.trim()),
+        }));
+
+      if (validHashedQuestions.length > 0) {
+        updates.recovery_questions = validHashedQuestions;
+      }
+    }
 
     if (college_email && finalCollegeId) {
       db.createVerificationRequest({
@@ -106,7 +133,7 @@ export async function POST(req: NextRequest) {
 
     const updatedUser = db.updateUser(user.id, updates) || user;
 
-    const res = NextResponse.json({ success: true, user: updatedUser });
+    const res = NextResponse.json({ success: true, user: sanitizeUser(updatedUser) });
 
     // Refresh cookies with confirmed user identity
     const sessionToken = Buffer.from(
@@ -114,6 +141,7 @@ export async function POST(req: NextRequest) {
         id: updatedUser.id,
         email: updatedUser.email,
         name: updatedUser.name,
+        nickname: updatedUser.nickname || updatedUser.name,
         role: updatedUser.role,
       })
     ).toString('base64');

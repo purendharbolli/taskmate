@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { sanitizeUser } from '@/lib/security';
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
 
     const colleges = db.getColleges();
     const enriched = users.map((u) => ({
-      ...u,
+      ...sanitizeUser(u),
       college: colleges.find((c) => c.id === u.college_id),
     }));
 

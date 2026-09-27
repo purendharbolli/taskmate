@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { db } from './db';
 import { User, UserRole } from './types';
+import { sanitizeUser } from './security';
 
 const SESSION_COOKIE_NAME = 'taskmate_user_id';
 const EMAIL_COOKIE_NAME = 'taskmate_user_email';
@@ -59,7 +60,7 @@ export async function getCurrentUser(): Promise<User | null> {
     });
   }
 
-  return user || null;
+  return user ? sanitizeUser(user) : null;
 }
 
 export async function requireAuth(): Promise<User> {
