@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { db } from './db';
 import { User, UserRole } from './types';
 import { sanitizeUser } from './security';
+import { getSupabaseUserById, getSupabaseUserByEmail } from './supabase';
 
 const SESSION_COOKIE_NAME = 'taskmate_user_id';
 const EMAIL_COOKIE_NAME = 'taskmate_user_email';
@@ -31,6 +32,25 @@ export async function getCurrentUser(): Promise<User | null> {
   let user = userId ? db.getUserById(userId) : undefined;
   if (!user && cachedEmail) {
     user = db.getUserByEmail(cachedEmail);
+  }
+
+  // Check live Supabase database directly for persistent cloud account
+  if (!user && (userId || cachedEmail)) {
+    try {
+      if (userId) {
+        const suUser = await getSupabaseUserById(userId);
+        if (suUser) user = suUser;
+      }
+      if (!user && cachedEmail) {
+        const suUser = await getSupabaseUserByEmail(cachedEmail);
+        if (suUser) user = suUser;
+      }
+      if (user) {
+        db.upsertUser(user);
+      }
+    } catch (e) {
+      console.warn('[getCurrentUser Supabase] Fallback:', e);
+    }
   }
 
   // Resilient multi-instance synchronization:

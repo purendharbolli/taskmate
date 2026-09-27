@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
 
@@ -65,11 +66,40 @@ export async function POST(req: NextRequest) {
     const uniquePrefix = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     const storedFileName = `${uniquePrefix}-${sanitizedOriginalName}`;
 
-    const uploadDir = getUploadDir();
-    const filePath = path.join(uploadDir, storedFileName);
-    fs.writeFileSync(filePath, buffer);
+    let fileUrl = `/api/files/${encodeURIComponent(storedFileName)}`;
+    let storageEngine = 'serverless-disk';
 
-    const fileUrl = `/api/files/${encodeURIComponent(storedFileName)}`;
+    // Attempt direct upload to Supabase Storage bucket 'task-attachments'
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from('task-attachments')
+          .upload(storedFileName, buffer, {
+            contentType: file.type || 'application/octet-stream',
+            upsert: true,
+          });
+
+        if (!uploadErr && uploadData) {
+          const { data: publicUrlData } = supabase.storage
+            .from('task-attachments')
+            .getPublicUrl(storedFileName);
+
+          if (publicUrlData && publicUrlData.publicUrl) {
+            fileUrl = publicUrlData.publicUrl;
+            storageEngine = 'supabase-storage';
+          }
+        }
+      } catch (sErr) {
+        console.warn('[Supabase Storage] Fallback to serverless storage:', sErr);
+      }
+    }
+
+    // Redundant backup to local serverless filesystem so file is never lost
+    try {
+      const uploadDir = getUploadDir();
+      const filePath = path.join(uploadDir, storedFileName);
+      fs.writeFileSync(filePath, buffer);
+    } catch {}
 
     return NextResponse.json({
       success: true,
@@ -78,6 +108,7 @@ export async function POST(req: NextRequest) {
       file_size: formatBytes(buffer.byteLength),
       file_size_bytes: buffer.byteLength,
       file_type: file.type || 'application/octet-stream',
+      storage_engine: storageEngine,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'File upload failed' }, { status: 500 });

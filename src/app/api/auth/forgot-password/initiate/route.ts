@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getSupabaseUserByEmail } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = db.getUserByEmail(cleanEmail);
+    let user = db.getUserByEmail(cleanEmail);
+    if (!user) {
+      try {
+        const suUser = await getSupabaseUserByEmail(cleanEmail);
+        if (suUser) user = db.upsertUser(suUser);
+      } catch (suErr) {
+        console.warn('[Forgot Password Initiate Supabase] Exception:', suErr);
+      }
+    }
+
     if (!user) {
       return NextResponse.json(
         { error: 'No TaskMate account found for this email address. Please check your spelling or create an account.' },

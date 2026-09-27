@@ -279,6 +279,19 @@ export const db = {
     return data.users[idx];
   },
 
+  upsertUser(user: User): User {
+    const data = loadDb();
+    const idx = data.users.findIndex((u) => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase());
+    if (idx !== -1) {
+      data.users[idx] = { ...data.users[idx], ...user };
+    } else {
+      data.users.push(user);
+    }
+    saveDb(data);
+    return idx !== -1 ? data.users[idx] : user;
+  },
+
+
   toggleUserSuspension(id: string, reason?: string): User | null {
     const data = loadDb();
     const user = data.users.find((u) => u.id === id);
@@ -448,6 +461,7 @@ export const db = {
     }
 
     saveDb(data);
+    syncRecordToSupabase('applications', newApp);
     return newApp;
   },
 

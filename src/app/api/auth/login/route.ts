@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyPassword, sanitizeUser } from '@/lib/security';
+import { getSupabaseUserByEmail } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,16 @@ export async function POST(req: NextRequest) {
     }
 
     let user = db.getUserByEmail(cleanEmail);
+    if (!user) {
+      try {
+        const suUser = await getSupabaseUserByEmail(cleanEmail);
+        if (suUser) {
+          user = db.upsertUser(suUser);
+        }
+      } catch (suErr) {
+        console.warn('[Login Supabase check] Exception:', suErr);
+      }
+    }
 
     // ==========================================
     // ACTION: SIGNUP

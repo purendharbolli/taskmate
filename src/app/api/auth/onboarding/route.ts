@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { hashPassword, hashRecoveryAnswer, sanitizeUser } from '@/lib/security';
+import { getSupabaseUserByEmail, getSupabaseUserById } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,9 +12,17 @@ export async function POST(req: NextRequest) {
     // Fallback 1: Resolve by body email or body user_id if cookies were stripped
     if (!user && body.email) {
       user = db.getUserByEmail(body.email.trim().toLowerCase()) || null;
+      if (!user) {
+        const suUser = await getSupabaseUserByEmail(body.email.trim().toLowerCase());
+        if (suUser) user = db.upsertUser(suUser);
+      }
     }
     if (!user && body.user_id) {
       user = db.getUserById(body.user_id) || null;
+      if (!user) {
+        const suUser = await getSupabaseUserById(body.user_id);
+        if (suUser) user = db.upsertUser(suUser);
+      }
     }
 
     // Fallback 2: Re-create user if missing in this lambda instance

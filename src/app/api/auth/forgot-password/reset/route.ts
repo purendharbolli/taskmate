@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyRecoveryAnswer, hashPassword } from '@/lib/security';
+import { getSupabaseUserByEmail } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +23,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = db.getUserByEmail(cleanEmail);
+    let user = db.getUserByEmail(cleanEmail);
+    if (!user) {
+      try {
+        const suUser = await getSupabaseUserByEmail(cleanEmail);
+        if (suUser) user = db.upsertUser(suUser);
+      } catch (suErr) {
+        console.warn('[Forgot Password Reset Supabase] Exception:', suErr);
+      }
+    }
+
     if (!user) {
       return NextResponse.json(
         { error: 'No user account found for this email.' },

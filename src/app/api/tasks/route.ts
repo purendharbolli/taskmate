@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import {
+  isSupabaseConfigured,
+  supabase,
+  getSupabaseTasks,
+  getSupabaseTaskFiles,
+} from '@/lib/supabase';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 50 * 1024 * 1024; // Strict 50 MB server limit
 
@@ -9,29 +15,69 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const collegeId = searchParams.get('collegeId') || undefined;
     const categoryId = searchParams.get('categoryId') || undefined;
-    const search = searchParams.get('search') || undefined;
+    const search = searchParams.get('search')?.toLowerCase() || undefined;
     const budgetMax = searchParams.get('budgetMax') ? Number(searchParams.get('budgetMax')) : undefined;
     const status = searchParams.get('status') || undefined;
     const requesterId = searchParams.get('requesterId') || undefined;
 
-    const tasks = db.getTasks({
-      collegeId,
-      categoryId,
-      search,
-      budgetMax,
-      status,
-      requesterId,
-    });
+    let tasks: any[] = [];
+
+    // 1. Direct Supabase read
+    if (isSupabaseConfigured()) {
+      try {
+        const suTasks = await getSupabaseTasks({
+          collegeId,
+          categoryId,
+          requesterId,
+          status,
+          budgetMax,
+        });
+        if (suTasks && suTasks.length > 0) {
+          tasks = suTasks;
+        }
+      } catch (err) {
+        console.warn('[Supabase GET Tasks] Falling back to local cache:', err);
+      }
+    }
+
+    // 2. Fallback to local database cache if Supabase is offline or empty
+    if (tasks.length === 0) {
+      tasks = db.getTasks({
+        collegeId,
+        categoryId,
+        search,
+        budgetMax,
+        status,
+        requesterId,
+      });
+    } else if (search) {
+      tasks = tasks.filter(
+        (t) =>
+          t.title.toLowerCase().includes(search) ||
+          t.description?.toLowerCase().includes(search)
+      );
+    }
 
     const categories = db.getCategories();
     const colleges = db.getColleges();
 
-    const enrichedTasks = tasks.map((t) => ({
-      ...t,
-      category: categories.find((c) => c.id === t.category_id),
-      college: colleges.find((c) => c.id === t.college_id),
-      files: db.getTaskFiles(t.id),
-    }));
+    const enrichedTasks = await Promise.all(
+      tasks.map(async (t) => {
+        let files = db.getTaskFiles(t.id);
+        if (files.length === 0 && isSupabaseConfigured()) {
+          const suFiles = await getSupabaseTaskFiles(t.id);
+          if (suFiles && suFiles.length > 0) {
+            files = suFiles;
+          }
+        }
+        return {
+          ...t,
+          category: categories.find((c) => c.id === t.category_id),
+          college: colleges.find((c) => c.id === t.college_id),
+          files,
+        };
+      })
+    );
 
     return NextResponse.json({ tasks: enrichedTasks });
   } catch (err: any) {
@@ -134,6 +180,27 @@ export async function POST(req: NextRequest) {
       },
       validatedFiles
     );
+
+    // Direct write to Supabase
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('tasks').upsert([newTask]);
+        if (validatedFiles.length > 0) {
+          const tfRecords = validatedFiles.map((f: any, idx: number) => ({
+            id: `tf-${newTask.id}-${idx + 1}`,
+            task_id: newTask.id,
+            file_name: f.file_name,
+            file_url: f.file_url,
+            file_type: f.file_type,
+            file_size: f.file_size || '1.2 MB',
+            file_size_bytes: f.file_size_bytes,
+          }));
+          await supabase.from('task_files').upsert(tfRecords);
+        }
+      } catch (suErr) {
+        console.warn('[Supabase Direct Task Sync] Exception:', suErr);
+      }
+    }
 
     return NextResponse.json({ success: true, task: newTask });
   } catch (err: any) {

@@ -452,3 +452,32 @@ INSERT INTO categories (id, name, "group", description, icon, bg_color) VALUES (
 INSERT INTO categories (id, name, "group", description, icon, bg_color) VALUES ('cat-event', 'Event Assistance', 'Campus Help', 'Fest setup, registration desk, sound check support', 'Users', '#8DD8FF') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description;
 INSERT INTO categories (id, name, "group", description, icon, bg_color) VALUES ('cat-other', 'Other Assistance', 'Campus Help', 'Other legitimate student-to-student peer assistance', 'HelpCircle', '#FF8FB8') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description;
 INSERT INTO categories (id, name, "group", description, icon, bg_color) VALUES ('cat-resume', 'Resume/CV preparation', 'Student Services', 'Internship resumes, LaTeX formatting, ATS optimization', 'FileText', '#8DD8FF') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description;
+
+-- 6. Storage Buckets & Policies for Task Attachments (50 MB limit)
+INSERT INTO storage.buckets (id, name, public, file_size_limit)
+VALUES ('task-attachments', 'task-attachments', true, 52428800)
+ON CONFLICT (id) DO UPDATE SET public = true, file_size_limit = 52428800;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Access for task-attachments'
+  ) THEN
+    CREATE POLICY "Public Access for task-attachments" ON storage.objects
+      FOR SELECT USING (bucket_id = 'task-attachments');
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Uploads for task-attachments'
+  ) THEN
+    CREATE POLICY "Public Uploads for task-attachments" ON storage.objects
+      FOR INSERT WITH CHECK (bucket_id = 'task-attachments');
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Updates for task-attachments'
+  ) THEN
+    CREATE POLICY "Public Updates for task-attachments" ON storage.objects
+      FOR UPDATE USING (bucket_id = 'task-attachments');
+  END IF;
+END $$;
