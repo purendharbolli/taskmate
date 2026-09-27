@@ -128,8 +128,12 @@ export interface Task {
   distance_approx?: string; // e.g. "0.8 km away"
   handover_method: 'Campus meeting point' | 'Self-arranged delivery' | 'Other';
   status: TaskStatus;
+  google_drive_link?: string;
   created_at: string;
   view_count: number;
+  college?: College;
+  category?: Category;
+  files?: TaskFile[];
 }
 
 export interface TaskFile {
@@ -139,6 +143,7 @@ export interface TaskFile {
   file_url: string;
   file_type: string;
   file_size?: string;
+  file_size_bytes?: number;
 }
 
 export interface Application {
@@ -254,6 +259,13 @@ export interface Message {
   order_id: string;
   sender_id: string;
   message: string;
+  attachment?: {
+    file_name: string;
+    file_url: string;
+    file_type: string;
+    file_size?: string;
+    file_size_bytes?: number;
+  };
   created_at: string;
 }
 

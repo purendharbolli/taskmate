@@ -17,7 +17,8 @@ import {
   User,
   ShieldCheck,
   Check,
-  ChevronDown
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
@@ -297,7 +298,7 @@ export default function TaskDetailPage() {
               <h3 className="text-xs font-black uppercase tracking-wider text-black/60 mb-2">
                 Attached Reference Material ({files.length})
               </h3>
-              {files.length === 0 ? (
+              {files.length === 0 && !task.google_drive_link ? (
                 <p className="text-xs text-black/50 italic">No reference files attached.</p>
               ) : (
                 <div className="space-y-2">
@@ -329,6 +330,26 @@ export default function TaskDetailPage() {
                       </a>
                     </div>
                   ))}
+
+                  {task.google_drive_link && (
+                    <div className="brutal-border p-3 bg-taskBlue/15 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 truncate">
+                        <ExternalLink className="w-5 h-5 text-taskBlue shrink-0" />
+                        <div className="truncate">
+                          <p className="text-xs font-black text-taskBlack truncate">Google Drive Reference Link</p>
+                          <p className="text-[11px] text-taskBlack/70 truncate">{task.google_drive_link}</p>
+                        </div>
+                      </div>
+                      <a
+                        href={task.google_drive_link}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="brutal-btn bg-taskYellow text-taskBlack px-3 py-1 text-xs font-black shrink-0 hover:bg-black hover:text-white transition-all"
+                      >
+                        OPEN DRIVE ↗
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

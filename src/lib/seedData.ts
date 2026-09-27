@@ -1009,6 +1009,7 @@ export const initialSeedData: DatabaseSchema = {
     { id: 'cat-thumb', name: 'Thumbnail Design', group: 'Creative', description: 'YouTube thumbnails for student creators & college channels', icon: 'Image', bgColor: '#FFD84D' },
     { id: 'cat-errand', name: 'Campus Errands', group: 'Campus Help', description: 'Pickup stationary, cafeteria queue, library book drops', icon: 'ShoppingBag', bgColor: '#FF8FB8' },
     { id: 'cat-event', name: 'Event Assistance', group: 'Campus Help', description: 'Fest setup, registration desk, sound check support', icon: 'Users', bgColor: '#8DD8FF' },
+    { id: 'cat-resume', name: 'Resume/CV preparation', group: 'Student Services', description: 'Internship resumes, LaTeX formatting, ATS optimization', icon: 'FileText', bgColor: '#8DD8FF' },
     { id: 'cat-other', name: 'Other Assistance', group: 'Campus Help', description: 'Other legitimate student-to-student peer assistance', icon: 'HelpCircle', bgColor: '#FF8FB8' }
   ],
   // ZERO fake / demo accounts: only an internal lead admin account if needed

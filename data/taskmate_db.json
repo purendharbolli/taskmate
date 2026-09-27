@@ -1122,6 +1122,14 @@
       "description": "Other legitimate student-to-student peer assistance",
       "icon": "HelpCircle",
       "bgColor": "#FF8FB8"
+    },
+    {
+      "id": "cat-resume",
+      "name": "Resume/CV preparation",
+      "group": "Student Services",
+      "description": "Internship resumes, LaTeX formatting, ATS optimization",
+      "icon": "FileText",
+      "bgColor": "#8DD8FF"
     }
   ],
   "users": [

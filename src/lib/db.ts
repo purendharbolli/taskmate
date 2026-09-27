@@ -292,6 +292,17 @@ export const db = {
   // Categories
   getCategories() {
     const data = loadDb();
+    if (!data.categories.some((c) => c.id === 'cat-resume')) {
+      data.categories.push({
+        id: 'cat-resume',
+        name: 'Resume/CV preparation',
+        group: 'Student Services',
+        description: 'Internship resumes, LaTeX formatting, ATS optimization',
+        icon: 'FileText',
+        bgColor: '#8DD8FF'
+      });
+      saveDb(data);
+    }
     return data.categories;
   },
 
@@ -358,6 +369,11 @@ export const db = {
       category,
       applications
     };
+  },
+
+  getTaskFiles(taskId: string): TaskFile[] {
+    const data = loadDb();
+    return data.task_files.filter((f) => f.task_id === taskId);
   },
 
   createTask(task: Omit<Task, 'id' | 'created_at' | 'view_count' | 'status'>, files: Omit<TaskFile, 'id' | 'task_id'>[]): Task {
@@ -922,13 +938,14 @@ export const db = {
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   },
 
-  createMessage(orderId: string, senderId: string, message: string): Message {
+  createMessage(orderId: string, senderId: string, message: string, attachment?: any): Message {
     const data = loadDb();
     const newMsg: Message = {
       id: `msg-${Date.now().toString(36)}`,
       order_id: orderId,
       sender_id: senderId,
       message,
+      attachment: attachment || undefined,
       created_at: new Date().toISOString()
     };
     data.messages.push(newMsg);
