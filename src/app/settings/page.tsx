@@ -81,8 +81,12 @@ export default function SettingsPage() {
   };
 
   const handleLogout = async () => {
-    document.cookie = 'taskmate_user_id=; path=/; max-age=0';
-    router.push('/login');
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
+    document.cookie = 'taskmate_user_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0';
+    document.cookie = 'taskmate_user_email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0';
+    window.location.href = '/login';
   };
 
   if (loading || !user) {

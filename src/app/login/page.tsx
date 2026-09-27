@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   UserPlus,
   LogIn,
+  LogOut,
+  UserCheck,
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import clsx from 'clsx';
@@ -29,6 +31,34 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [accountExistsNotice, setAccountExistsNotice] = useState(false);
+  const [existingUser, setExistingUser] = useState<any | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // Check if a session is currently active
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) {
+          setExistingUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSignOut = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
+    document.cookie = 'taskmate_user_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0';
+    document.cookie = 'taskmate_user_email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0';
+    setExistingUser(null);
+    setEmail('');
+    setPassword('');
+    setLoggingOut(false);
+    window.location.reload();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +106,7 @@ export default function LoginPage() {
           setError(data.error || 'Authentication failed. Please try again.');
         }
       } else {
-        router.push(data.redirectTo || '/dashboard');
+        window.location.href = data.redirectTo || '/dashboard';
       }
     } catch {
       setError('Network connection error. Please try again.');
@@ -104,6 +134,51 @@ export default function LoginPage() {
               : 'Create your unique student profile to post or complete tasks.'}
           </p>
         </div>
+
+        {/* Active Session Notice if already logged in */}
+        {existingUser && (
+          <div className="brutal-border bg-taskYellow/25 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="sticker-tag bg-taskYellow text-taskBlack px-2 py-0.5 text-[10px] font-black brutal-border">
+                ACTIVE ACCOUNT DETECTED
+              </span>
+              <span className="text-[10px] font-bold text-black/60">Already signed in</span>
+            </div>
+
+            <div className="bg-white p-2.5 brutal-border space-y-0.5">
+              <p className="text-xs font-black text-taskBlack uppercase">
+                {existingUser.nickname || existingUser.name}
+              </p>
+              <p className="text-[11px] font-bold text-taskBlack/70 truncate">
+                {existingUser.email}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <BrutalButton
+                type="button"
+                variant="yellow"
+                size="sm"
+                onClick={() => router.push('/dashboard')}
+              >
+                <span>DASHBOARD →</span>
+              </BrutalButton>
+              <BrutalButton
+                type="button"
+                variant="white"
+                size="sm"
+                disabled={loggingOut}
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-3.5 h-3.5 mr-1" />
+                <span>{loggingOut ? 'SIGNING OUT...' : 'LOG OUT'}</span>
+              </BrutalButton>
+            </div>
+            <p className="text-[10px] font-bold text-black/60 text-center">
+              Click &quot;Log Out&quot; above to sign into or register a different student account.
+            </p>
+          </div>
+        )}
 
         {/* Tab Toggle: Log In vs Create Account */}
         <div className="grid grid-cols-2 gap-2 brutal-border p-1 bg-taskOffWhite">

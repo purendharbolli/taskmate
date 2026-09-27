@@ -61,12 +61,15 @@ export const Navbar: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
+    document.cookie = 'taskmate_user_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0';
+    document.cookie = 'taskmate_user_email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0';
     setCurrentUser(null);
     setUserMenuOpen(false);
     setMobileMenuOpen(false);
-    router.push('/');
-    router.refresh();
+    window.location.href = '/login';
   };
 
   return (
