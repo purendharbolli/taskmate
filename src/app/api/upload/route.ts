@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { isDisallowedFileType } from '@/lib/security';
 import fs from 'fs';
 import path from 'path';
 
@@ -34,6 +35,16 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file was provided in the upload request.' }, { status: 400 });
+    }
+
+    // Safety validation against executable / dangerous scripts
+    if (isDisallowedFileType(file.name)) {
+      return NextResponse.json(
+        {
+          error: `For campus safety, executable and script files (.exe, .bat, etc.) cannot be uploaded. Please share documents, images, code archives, or slides.`,
+        },
+        { status: 400 }
+      );
     }
 
     // 1. Initial size check from File object header

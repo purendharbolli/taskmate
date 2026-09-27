@@ -515,6 +515,19 @@ export const db = {
     saveDb(data);
     syncRecordToSupabase('orders', newOrder);
     syncRecordToSupabase('tasks', task);
+
+    // Automatically create/open private conversation between task giver and acceptor
+    const initialMsg: Message = {
+      id: `msg-${Date.now().toString(36)}`,
+      order_id: orderId,
+      sender_id: task.requester_id,
+      message: `🎉 Task accepted! Private conversation opened between task giver and taskmate. Coordinate delivery time, location, and requirements here.`,
+      created_at: new Date().toISOString()
+    };
+    data.messages.push(initialMsg);
+    saveDb(data);
+    syncRecordToSupabase('messages', initialMsg);
+
     return { order: newOrder, task };
   },
 
@@ -553,6 +566,19 @@ export const db = {
       review: data.reviews.find((r) => r.order_id === order.id)
     };
   },
+
+  getOrderByTaskId(taskId: string): (Order & { task?: Task; requester?: User; worker?: User }) | null {
+    const data = loadDb();
+    const order = data.orders.find((o) => o.task_id === taskId);
+    if (!order) return null;
+    return {
+      ...order,
+      task: data.tasks.find((t) => t.id === order.task_id),
+      requester: data.users.find((u) => u.id === order.requester_id),
+      worker: data.users.find((u) => u.id === order.worker_id)
+    };
+  },
+
 
   // Simulate Payment Lock
   payAndStartTask(orderId: string, paymentMethod: string = 'TaskMate Mock Escrow'): Order {

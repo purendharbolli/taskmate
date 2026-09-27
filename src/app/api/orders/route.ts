@@ -9,12 +9,11 @@ export async function GET(req: NextRequest) {
     const all = searchParams.get('all') === 'true';
 
     // If all is requested, allow admin or fallback to user's orders
-    if (all && user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
-      const orders = db.getOrders();
-      return NextResponse.json({ orders });
+    if (!user) {
+      return NextResponse.json({ orders: [] });
     }
 
-    const orders = db.getOrders(user ? user.id : undefined);
+    const orders = db.getOrders(user.id);
     return NextResponse.json({ orders });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

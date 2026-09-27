@@ -71,9 +71,21 @@ export async function GET(
       } catch {}
     }
 
+    const order = db.getOrderByTaskId(params.id);
+
     return NextResponse.json({
       ...data,
       college,
+      orderId: order?.id,
+      acceptedWorkerId: order?.worker_id,
+      order: order
+        ? {
+            id: order.id,
+            status: order.status,
+            worker_id: order.worker_id,
+            requester_id: order.requester_id,
+          }
+        : undefined,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

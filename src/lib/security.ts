@@ -97,3 +97,20 @@ export function sanitizeUser<T extends Record<string, any>>(user: T | null | und
   }
   return copy as T;
 }
+
+/**
+ * Basic protection against sending invalid or unsafe executable files in chat and task uploads.
+ */
+const DISALLOWED_EXTENSIONS = new Set([
+  '.exe', '.bat', '.cmd', '.sh', '.vbs', '.msi', '.scr', '.jar', '.com', '.pif', '.reg', '.ps1', '.hta', '.cpl', '.apk', '.wsf'
+]);
+
+export function isDisallowedFileType(fileName: string): boolean {
+  if (!fileName || typeof fileName !== 'string') return false;
+  const lower = fileName.toLowerCase().trim();
+  const lastDot = lower.lastIndexOf('.');
+  if (lastDot === -1) return false;
+  const ext = lower.slice(lastDot);
+  return DISALLOWED_EXTENSIONS.has(ext);
+}
+

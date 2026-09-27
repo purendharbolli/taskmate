@@ -18,7 +18,8 @@ import {
   HelpCircle,
   FileText,
   CreditCard,
-  Star
+  Star,
+  ExternalLink,
 } from 'lucide-react';
 import { StatusTimeline } from '@/components/StatusTimeline';
 import { BrutalButton } from '@/components/ui/BrutalButton';
@@ -718,9 +719,19 @@ export default function OrderDetailPage() {
                     Task Chat (Requester &amp; Worker)
                   </span>
                 </div>
-                <span className="text-[10px] font-mono font-bold bg-white px-1.5 py-0.5 brutal-border">
-                  SECURE
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold bg-white px-1.5 py-0.5 brutal-border">
+                    SECURE
+                  </span>
+                  <Link
+                    href={`/messages/${order.id}`}
+                    className="text-[10px] font-black uppercase bg-white hover:bg-taskYellow px-2 py-0.5 brutal-border flex items-center gap-1"
+                    title="Open full-screen chat with file sharing & Google Drive"
+                  >
+                    <span>OPEN CHAT</span>
+                    <ExternalLink className="w-3 h-3 stroke-[2.5]" />
+                  </Link>
+                </div>
               </div>
 
               {/* Chat Messages Log */}

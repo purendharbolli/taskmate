@@ -18,7 +18,8 @@ import {
   ShieldCheck,
   Check,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  MessageSquare,
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
@@ -43,6 +44,8 @@ export default function TaskDetailPage() {
   } | null>(null);
 
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [acceptedWorkerId, setAcceptedWorkerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -73,6 +76,8 @@ export default function TaskDetailPage() {
         } else {
           setData(resData);
           setProposedPrice(resData.task.budget);
+          if (resData.orderId) setOrderId(resData.orderId);
+          if (resData.acceptedWorkerId) setAcceptedWorkerId(resData.acceptedWorkerId);
         }
         setLoading(false);
       })
@@ -135,8 +140,10 @@ export default function TaskDetailPage() {
         method: 'POST',
       });
       const resData = await res.json();
-      if (resData.success) {
-        router.push(`/orders/${resData.order.id}`);
+      if (resData.success && resData.order) {
+        setOrderId(resData.order.id);
+        // Automatically open the private conversation between giver and acceptor
+        router.push(`/messages/${resData.order.id}`);
       } else {
         alert(resData.error || 'Failed to accept applicant');
       }
@@ -414,9 +421,19 @@ export default function TaskDetailPage() {
                           </BrutalButton>
                         )}
                         {app.status === 'ACCEPTED' && (
-                          <BrutalBadge variant="green" size="md">
-                            ✓ ACCEPTED
-                          </BrutalBadge>
+                          <div className="flex items-center gap-2">
+                            <BrutalBadge variant="green" size="md">
+                              ✓ ACCEPTED
+                            </BrutalBadge>
+                            {orderId && (isRequester || currentUser?.id === app.worker_id) && (
+                              <Link href={`/messages/${orderId}`}>
+                                <BrutalButton variant="yellow" size="sm">
+                                  <MessageSquare className="w-3.5 h-3.5 stroke-[2.5]" />
+                                  <span>CHAT</span>
+                                </BrutalButton>
+                              </Link>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -445,8 +462,32 @@ export default function TaskDetailPage() {
             </p>
 
             {isRequester ? (
-              <div className="p-3 brutal-border bg-white text-center text-xs font-black uppercase">
-                You posted this task. Review applications below.
+              <div className="space-y-2.5">
+                <div className="p-3 brutal-border bg-white text-center text-xs font-black uppercase">
+                  You posted this task. Review applications below.
+                </div>
+                {orderId && (
+                  <Link href={`/messages/${orderId}`} className="block">
+                    <BrutalButton variant="white" fullWidth size="lg">
+                      <MessageSquare className="w-4 h-4 stroke-[3]" />
+                      <span>CHAT WITH TASKMATE</span>
+                    </BrutalButton>
+                  </Link>
+                )}
+              </div>
+            ) : currentUser && acceptedWorkerId === currentUser.id ? (
+              <div className="space-y-2.5">
+                <div className="p-3 brutal-border bg-white text-center text-xs font-black uppercase">
+                  ✓ You are accepted for this task!
+                </div>
+                {orderId && (
+                  <Link href={`/messages/${orderId}`} className="block">
+                    <BrutalButton variant="white" fullWidth size="lg">
+                      <MessageSquare className="w-4 h-4 stroke-[3]" />
+                      <span>CHAT WITH TASK GIVER</span>
+                    </BrutalButton>
+                  </Link>
+                )}
               </div>
             ) : alreadyApplied ? (
               <div className="p-3 brutal-border bg-taskGreen/40 text-center text-xs font-black uppercase">
