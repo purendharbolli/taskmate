@@ -4,6 +4,7 @@ import { initialSeedData } from './seedData';
 import {
   DatabaseSchema,
   User,
+  UserRole,
   Task,
   TaskFile,
   Application,
@@ -297,9 +298,222 @@ export const db = {
     const user = data.users.find((u) => u.id === id);
     if (!user) return null;
     user.is_suspended = !user.is_suspended;
+    user.block_status = user.is_suspended ? 'PERMANENT' : 'NONE';
     user.suspension_reason = user.is_suspended ? reason || 'Policy violation' : undefined;
+    if (!user.is_suspended) user.blocked_until = undefined;
     saveDb(data);
     return user;
+  },
+
+  warnUser(userId: string, reason: string, adminId: string, adminName: string): User | null {
+    const data = loadDb();
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) return null;
+
+    if (!user.warnings) user.warnings = [];
+    user.warning_count = (user.warning_count || 0) + 1;
+    user.warnings.push({
+      id: `warn-${Date.now().toString(36)}`,
+      reason,
+      warned_by: adminName,
+      created_at: new Date().toISOString(),
+    });
+
+    data.notifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      user_id: user.id,
+      type: 'WARNING_ISSUED',
+      title: 'Official Moderator Warning ⚠️',
+      message: `You have received an official moderation warning: "${reason}". Please adhere to TaskMate campus community guidelines.`,
+      link: '/profile',
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    data.audit_logs.unshift({
+      id: `aud-${Date.now().toString(36)}`,
+      user_id: adminId,
+      admin_name: adminName,
+      action: 'WARN_USER',
+      target_type: 'user',
+      target_id: user.id,
+      target_name: user.name,
+      details: `Warning issued: "${reason}" (Total warnings: ${user.warning_count})`,
+      created_at: new Date().toISOString(),
+    });
+
+    saveDb(data);
+    return user;
+  },
+
+  blockUser(
+    userId: string,
+    type: 'TEMPORARY' | 'PERMANENT',
+    reason: string,
+    adminId: string,
+    adminName: string,
+    durationDays: number = 7
+  ): User | null {
+    const data = loadDb();
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) return null;
+
+    user.is_suspended = true;
+    user.block_status = type;
+    user.suspension_reason = reason;
+
+    if (type === 'TEMPORARY') {
+      const until = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+      user.blocked_until = until.toISOString();
+    } else {
+      user.blocked_until = undefined;
+    }
+
+    data.notifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      user_id: user.id,
+      type: 'ACCOUNT_MODERATED',
+      title: type === 'PERMANENT' ? 'Account Suspended Permanently ⛔' : `Account Suspended (${durationDays} Days) ⚠️`,
+      message: type === 'PERMANENT'
+        ? `Your TaskMate account has been permanently suspended due to: "${reason}".`
+        : `Your account is temporarily suspended until ${new Date(user.blocked_until!).toLocaleDateString()} due to: "${reason}".`,
+      link: '/profile',
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    data.audit_logs.unshift({
+      id: `aud-${Date.now().toString(36)}`,
+      user_id: adminId,
+      admin_name: adminName,
+      action: type === 'PERMANENT' ? 'BLOCK_USER_PERM' : 'BLOCK_USER_TEMP',
+      target_type: 'user',
+      target_id: user.id,
+      target_name: user.name,
+      details: `${type} suspension: "${reason}"${type === 'TEMPORARY' ? ` until ${user.blocked_until}` : ''}`,
+      created_at: new Date().toISOString(),
+    });
+
+    saveDb(data);
+    return user;
+  },
+
+  unblockUser(userId: string, adminId: string, adminName: string): User | null {
+    const data = loadDb();
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) return null;
+
+    user.is_suspended = false;
+    user.block_status = 'NONE';
+    user.suspension_reason = undefined;
+    user.blocked_until = undefined;
+
+    data.notifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      user_id: user.id,
+      type: 'ACCOUNT_MODERATED',
+      title: 'Account Restored ✅',
+      message: 'Your TaskMate account suspension has been lifted. Welcome back to the campus marketplace.',
+      link: '/profile',
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    data.audit_logs.unshift({
+      id: `aud-${Date.now().toString(36)}`,
+      user_id: adminId,
+      admin_name: adminName,
+      action: 'UNBLOCK_USER',
+      target_type: 'user',
+      target_id: user.id,
+      target_name: user.name,
+      details: 'Account unblocked and restored to good standing',
+      created_at: new Date().toISOString(),
+    });
+
+    saveDb(data);
+    return user;
+  },
+
+  updateUserRole(userId: string, newRole: UserRole, adminId: string, adminName: string): User | null {
+    const data = loadDb();
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) return null;
+
+    const oldRole = user.role;
+    user.role = newRole;
+
+    data.audit_logs.unshift({
+      id: `aud-${Date.now().toString(36)}`,
+      user_id: adminId,
+      admin_name: adminName,
+      action: 'UPDATE_USER_ROLE',
+      target_type: 'user',
+      target_id: user.id,
+      target_name: user.name,
+      details: `Role updated from ${oldRole} to ${newRole}`,
+      created_at: new Date().toISOString(),
+    });
+
+    saveDb(data);
+    return user;
+  },
+
+  removeTaskByAdmin(taskId: string, reason: string, adminId: string, adminName: string): Task | null {
+    const data = loadDb();
+    const task = data.tasks.find((t) => t.id === taskId);
+    if (!task) return null;
+
+    task.status = 'CANCELLED';
+
+    data.notifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      user_id: task.requester_id,
+      type: 'TASK_MODERATED',
+      title: 'Task Removed by Moderator ⚠️',
+      message: `Your task "${task.title}" was removed by moderation. Reason: ${reason}`,
+      link: '/tasks',
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    data.audit_logs.unshift({
+      id: `aud-${Date.now().toString(36)}`,
+      user_id: adminId,
+      admin_name: adminName,
+      action: 'REMOVE_TASK',
+      target_type: 'task',
+      target_id: task.id,
+      target_name: task.title,
+      details: `Task cancelled/removed. Reason: "${reason}"`,
+      created_at: new Date().toISOString(),
+    });
+
+    saveDb(data);
+    return task;
+  },
+
+  getUserModerationContext(userId: string) {
+    const data = loadDb();
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) return null;
+
+    const postedTasks = data.tasks.filter((t) => t.requester_id === userId);
+    const assignedOrders = data.orders.filter((o) => o.worker_id === userId);
+    const reportsAgainst = data.moderation_reports.filter((r) => r.reported_user_id === userId);
+    const reportsFiled = data.moderation_reports.filter((r) => r.reporter_id === userId);
+    const verification = data.verification_requests.find((v) => v.user_id === userId);
+    const college = data.colleges.find((c) => c.id === user.college_id);
+
+    return {
+      user,
+      college,
+      postedTasks,
+      assignedOrders,
+      reportsAgainst,
+      reportsFiled,
+      verification,
+    };
   },
 
   // Categories
@@ -419,6 +633,11 @@ export const db = {
   },
 
   // Applications
+  getApplications(): Application[] {
+    const data = loadDb();
+    return data.applications;
+  },
+
   getApplicationsForTask(taskId: string): (Application & { worker?: User })[] {
     const data = loadDb();
     const apps = data.applications.filter((a) => a.task_id === taskId);
@@ -1038,7 +1257,13 @@ export const db = {
     return data.verification_requests;
   },
 
-  reviewVerification(id: string, status: 'APPROVED' | 'REJECTED', notes: string, reviewerId: string): VerificationRequest | null {
+  reviewVerification(
+    id: string,
+    status: 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_NEEDED',
+    notes: string,
+    reviewerId: string,
+    reviewerName?: string
+  ): VerificationRequest | null {
     const data = loadDb();
     const req = data.verification_requests.find((v) => v.id === id);
     if (!req) return null;
@@ -1046,7 +1271,7 @@ export const db = {
     const now = new Date().toISOString();
     req.status = status;
     req.review_notes = notes;
-    req.reviewed_by = reviewerId;
+    req.reviewed_by = reviewerName || reviewerId;
     req.reviewed_at = now;
 
     // Update user college_verified flag
@@ -1057,14 +1282,22 @@ export const db = {
     }
 
     // Notify user
+    let title = 'Verification Update ⚠️';
+    let message = `Your verification status: ${notes}`;
+    if (status === 'APPROVED') {
+      title = 'Student Status Verified! 🎓';
+      message = `You are now a Verified Student at ${req.college_name}! Verified badge added to your profile.`;
+    } else if (status === 'ADDITIONAL_INFO_NEEDED') {
+      title = 'Action Required: Student Verification 📝';
+      message = `Additional information needed for your college verification: "${notes}". Please submit additional proof.`;
+    }
+
     data.notifications.unshift({
       id: `notif-${Date.now().toString(36)}`,
       user_id: req.user_id,
       type: 'VERIFICATION_UPDATE',
-      title: status === 'APPROVED' ? 'Student Status Verified! 🎓' : 'Verification Update ⚠️',
-      message: status === 'APPROVED'
-        ? `You are now a Verified Student at ${req.college_name}! Verified badge added to your profile.`
-        : `Your verification could not be approved. Reason: ${notes}`,
+      title,
+      message,
       link: `/profile`,
       read: false,
       created_at: now
@@ -1073,9 +1306,11 @@ export const db = {
     data.audit_logs.unshift({
       id: `aud-${Date.now().toString(36)}`,
       user_id: reviewerId,
+      admin_name: reviewerName,
       action: 'REVIEW_VERIFICATION',
       target_type: 'verification',
       target_id: id,
+      target_name: req.user_name,
       details: `${status}: ${notes}`,
       created_at: now
     });
@@ -1085,17 +1320,58 @@ export const db = {
   },
 
   // Moderation Reports
-  createModerationReport(report: Omit<ModerationReport, 'id' | 'status' | 'created_at'>): ModerationReport {
+  createModerationReport(report: {
+    reporter_id: string;
+    reporter_name: string;
+    reporter_email?: string;
+    reported_user_id?: string;
+    reported_user_name?: string;
+    related_task_id?: string;
+    related_task_title?: string;
+    reason: any;
+    description: string;
+    evidence_url?: string;
+    evidence_link?: string;
+  }): { success: boolean; report?: ModerationReport; error?: string } {
     const data = loadDb();
+
+    // Prevent duplicate active reports from same reporter against same user
+    if (report.reported_user_id) {
+      const existing = data.moderation_reports.find(
+        (r) =>
+          r.reporter_id === report.reporter_id &&
+          r.reported_user_id === report.reported_user_id &&
+          (r.status === 'PENDING' || r.status === 'UNDER_REVIEW' || r.status === 'OPEN')
+      );
+      if (existing) {
+        return {
+          success: false,
+          error: 'You have already submitted an active report for this user that is currently under review by our moderation team.',
+        };
+      }
+    }
+
     const newRep: ModerationReport = {
       ...report,
       id: `rep-${Date.now().toString(36)}`,
-      status: 'OPEN',
+      status: 'PENDING',
       created_at: new Date().toISOString()
     };
     data.moderation_reports.unshift(newRep);
+
+    data.audit_logs.unshift({
+      id: `aud-${Date.now().toString(36)}`,
+      user_id: report.reporter_id,
+      action: 'SUBMIT_REPORT',
+      target_type: 'report',
+      target_id: newRep.id,
+      target_name: report.reported_user_name || 'User Report',
+      details: `Report reason: "${report.reason}". Reported user: ${report.reported_user_name || report.reported_user_id}`,
+      created_at: new Date().toISOString()
+    });
+
     saveDb(data);
-    return newRep;
+    return { success: true, report: newRep };
   },
 
   getModerationReports(): ModerationReport[] {
@@ -1103,13 +1379,39 @@ export const db = {
     return data.moderation_reports;
   },
 
-  updateModerationReport(id: string, status: ModerationReport['status'], notes?: string): ModerationReport | null {
+  updateModerationReport(
+    id: string,
+    status: ModerationReport['status'],
+    notes?: string,
+    adminId?: string,
+    adminName?: string,
+    actionTaken?: string
+  ): ModerationReport | null {
     const data = loadDb();
     const rep = data.moderation_reports.find((r) => r.id === id);
     if (!rep) return null;
     rep.status = status;
-    rep.admin_notes = notes;
-    rep.resolved_at = new Date().toISOString();
+    if (notes !== undefined) rep.admin_notes = notes;
+    if (actionTaken !== undefined) rep.action_taken = actionTaken;
+    if (adminName) rep.reviewed_by = adminName;
+    if (status === 'RESOLVED' || status === 'DISMISSED') {
+      rep.resolved_at = new Date().toISOString();
+    }
+
+    if (adminId) {
+      data.audit_logs.unshift({
+        id: `aud-${Date.now().toString(36)}`,
+        user_id: adminId,
+        admin_name: adminName || 'Admin',
+        action: 'REVIEW_REPORT',
+        target_type: 'report',
+        target_id: rep.id,
+        target_name: rep.reported_user_name || 'Report',
+        details: `Status set to ${status}. Notes: "${notes || 'None'}". Action taken: ${actionTaken || 'None'}`,
+        created_at: new Date().toISOString(),
+      });
+    }
+
     saveDb(data);
     return rep;
   },
@@ -1118,5 +1420,25 @@ export const db = {
   getAuditLogs(): AuditLog[] {
     const data = loadDb();
     return data.audit_logs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
+
+  createAuditLog(entry: {
+    user_id: string;
+    admin_name?: string;
+    action: string;
+    target_type: string;
+    target_id: string;
+    target_name?: string;
+    details: string;
+  }): AuditLog {
+    const data = loadDb();
+    const newLog: AuditLog = {
+      id: `aud-${Date.now().toString(36)}`,
+      ...entry,
+      created_at: new Date().toISOString(),
+    };
+    data.audit_logs.unshift(newLog);
+    saveDb(data);
+    return newLog;
   }
 };

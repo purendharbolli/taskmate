@@ -41,6 +41,11 @@ export interface User {
   college?: College;
   is_suspended?: boolean;
   suspension_reason?: string;
+  block_status?: 'NONE' | 'TEMPORARY' | 'PERMANENT';
+  blocked_until?: string;
+  warning_count?: number;
+  warnings?: { id: string; reason: string; warned_by: string; created_at: string }[];
+  admin_notes?: string;
   created_at: string;
   updated_at: string;
   last_login_at: string;
@@ -246,7 +251,10 @@ export interface Notification {
     | 'NEW_REVIEW'
     | 'VERIFICATION_UPDATE'
     | 'COLLEGE_APPROVED'
-    | 'MESSAGE_RECEIVED';
+    | 'MESSAGE_RECEIVED'
+    | 'WARNING_ISSUED'
+    | 'ACCOUNT_MODERATED'
+    | 'TASK_MODERATED';
   title: string;
   message: string;
   link?: string;
@@ -276,25 +284,34 @@ export interface VerificationRequest {
   college_id: string;
   college_name: string;
   college_email: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_NEEDED';
   submission_date: string;
   reviewed_by?: string;
   reviewed_at?: string;
   review_notes?: string;
+  document_url?: string;
 }
+
+export type ModerationReportStatus = 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED' | 'OPEN';
 
 export interface ModerationReport {
   id: string;
   reporter_id: string;
   reporter_name: string;
+  reporter_email?: string;
   reported_user_id?: string;
   reported_user_name?: string;
   related_task_id?: string;
+  related_task_title?: string;
   related_order_id?: string;
   reason:
-    | 'Fraud'
+    | 'Suspected scam/fraud'
+    | 'Fake identity'
+    | 'Fake proof/work'
+    | 'Payment-related issue'
+    | 'Harassment/abuse'
     | 'Spam'
-    | 'Harassment'
+    | 'Fraud'
     | 'Inappropriate content'
     | 'Fake task'
     | 'Payment issue'
@@ -302,18 +319,23 @@ export interface ModerationReport {
     | 'Other';
   description: string;
   evidence_url?: string;
-  status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
+  evidence_link?: string;
+  status: ModerationReportStatus;
   created_at: string;
   resolved_at?: string;
   admin_notes?: string;
+  reviewed_by?: string;
+  action_taken?: string;
 }
 
 export interface AuditLog {
   id: string;
   user_id: string;
+  admin_name?: string;
   action: string;
   target_type: string;
   target_id: string;
+  target_name?: string;
   details: string;
   created_at: string;
 }

@@ -89,6 +89,20 @@ export async function requireAuth(): Promise<User> {
     throw new Error('UNAUTHORIZED');
   }
   if (user.is_suspended) {
+    // If temporary block has expired, automatically lift suspension
+    if (user.blocked_until && new Date(user.blocked_until).getTime() <= Date.now()) {
+      user.is_suspended = false;
+      user.block_status = 'NONE';
+      user.suspension_reason = undefined;
+      user.blocked_until = undefined;
+      db.updateUser(user.id, {
+        is_suspended: false,
+        block_status: 'NONE',
+        suspension_reason: undefined,
+        blocked_until: undefined,
+      });
+      return user;
+    }
     throw new Error('SUSPENDED');
   }
   return user;
@@ -104,5 +118,6 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<User> {
 
 export function canAccessAdmin(user: User | null): boolean {
   if (!user) return false;
+  if (user.is_suspended) return false;
   return user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'MODERATOR';
 }

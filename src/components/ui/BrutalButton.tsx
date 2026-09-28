@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 interface BrutalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'yellow' | 'blue' | 'pink' | 'white' | 'black';
+  variant?: 'yellow' | 'blue' | 'pink' | 'white' | 'black' | 'green';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
 }
@@ -21,6 +21,7 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
     pink: 'bg-taskPink text-taskBlack hover:bg-[#f77aa9]',
     white: 'bg-white text-taskBlack hover:bg-[#fff9e6]',
     black: 'bg-taskBlack text-white hover:bg-[#222222]',
+    green: 'bg-taskGreen text-taskBlack hover:bg-[#86e8a8]',
   };
 
   const sizeStyles = {

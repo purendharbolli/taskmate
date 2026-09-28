@@ -13,14 +13,26 @@ export async function GET() {
     const raw = db.getRaw();
 
     const totalUsers = raw.users.length;
+    const activeUsers = raw.users.filter((u) => !u.is_suspended).length;
+    const suspendedUsers = raw.users.filter((u) => u.is_suspended).length;
     const verifiedStudents = raw.users.filter((u) => u.college_verified).length;
-    const activeTasks = raw.tasks.filter((t) => t.status === 'OPEN').length;
+
+    const totalTasks = raw.tasks.length;
+    const activeTasks = raw.tasks.filter((t) => t.status === 'OPEN' || t.status === 'ASSIGNED' || t.status === 'IN_PROGRESS').length;
     const completedTasks = raw.tasks.filter((t) => t.status === 'COMPLETED').length;
+    const cancelledTasks = raw.tasks.filter((t) => t.status === 'CANCELLED').length;
+
+    const pendingReports = raw.moderation_reports.filter(
+      (r) => r.status === 'PENDING' || r.status === 'OPEN' || r.status === 'UNDER_REVIEW'
+    ).length;
+    const pendingVerifications = raw.verification_requests.filter(
+      (v) => v.status === 'PENDING' || v.status === 'ADDITIONAL_INFO_NEEDED'
+    ).length;
+    const openDisputes = raw.disputes.filter((d) => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length;
+    const pendingCollegeRequests = raw.college_requests.filter((r) => r.status === 'PENDING').length;
+
     const activeColleges = raw.colleges.filter((c) => c.active).length;
     const activeCities = raw.cities.length;
-    const openDisputes = raw.disputes.filter((d) => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length;
-    const pendingVerifications = raw.verification_requests.filter((v) => v.status === 'PENDING').length;
-    const pendingCollegeRequests = raw.college_requests.filter((r) => r.status === 'PENDING').length;
 
     const totalVolume = raw.orders.reduce((sum, o) => sum + (o.amount || 0), 0);
     const platformRevenue = raw.orders.reduce((sum, o) => sum + (o.platform_fee || 0), 0);
@@ -48,14 +60,19 @@ export async function GET() {
     return NextResponse.json({
       metrics: {
         totalUsers,
+        activeUsers,
+        suspendedUsers,
         verifiedStudents,
+        totalTasks,
         activeTasks,
         completedTasks,
+        cancelledTasks,
+        pendingReports,
+        pendingVerifications,
+        openDisputes,
+        pendingCollegeRequests,
         activeColleges,
         activeCities,
-        openDisputes,
-        pendingVerifications,
-        pendingCollegeRequests,
         totalVolume,
         platformRevenue,
       },
