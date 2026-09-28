@@ -710,7 +710,7 @@ export default function OrderDetailPage() {
                     Requester (Giver)
                   </span>
                   <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                    <span className="truncate">{requester?.name || 'Requester'}</span>
+                    <span className="truncate">{requester?.nickname || requester?.name || 'Requester'}</span>
                     {requester?.admin_verified && (
                       <VerifiedProfileBadge isVerified={true} size="xs" />
                     )}
@@ -721,7 +721,7 @@ export default function OrderDetailPage() {
                     Taskmate (Worker)
                   </span>
                   <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                    <span className="truncate">{worker?.name || 'Worker'}</span>
+                    <span className="truncate">{worker?.nickname || worker?.name || 'Worker'}</span>
                     {worker?.admin_verified && (
                       <VerifiedProfileBadge isVerified={true} size="xs" />
                     )}

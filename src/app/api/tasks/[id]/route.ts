@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { sanitizeUser } from '@/lib/security';
+import { sanitizeUser, sanitizePublicUser } from '@/lib/security';
 
 export async function GET(
   req: NextRequest,
@@ -72,9 +72,22 @@ export async function GET(
     }
 
     const order = db.getOrderByTaskId(params.id);
+    const allUsers = db.getUsers();
+
+    // Sanitize requester and applicants to guarantee zero public email/credential leaks
+    const sanitizedRequester = data.requester ? sanitizePublicUser(data.requester) : undefined;
+    const sanitizedApplications = (data.applications || []).map((app) => {
+      const worker = allUsers.find((u) => u.id === app.worker_id);
+      return {
+        ...app,
+        worker: worker ? sanitizePublicUser(worker) : (app as any).worker ? sanitizePublicUser((app as any).worker) : undefined,
+      };
+    });
 
     return NextResponse.json({
       ...data,
+      requester: sanitizedRequester,
+      applications: sanitizedApplications,
       college,
       orderId: order?.id,
       acceptedWorkerId: order?.worker_id,

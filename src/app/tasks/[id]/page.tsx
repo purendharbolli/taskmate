@@ -395,13 +395,13 @@ export default function TaskDetailPage() {
                       <div>
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="font-black text-sm uppercase text-taskBlack">
-                            {workerUser?.name || 'Student Worker'}
+                            {workerUser?.nickname || workerUser?.name || 'Student Worker'}
                           </span>
                           {workerUser?.admin_verified && (
                             <VerifiedProfileBadge isVerified={true} size="xs" />
                           )}
                           <span className="flex items-center text-xs font-black text-taskBlack">
-                            ★ {workerUser?.rating || 5.0}
+                            ★ {(workerUser?.completed_tasks && workerUser.completed_tasks > 0) ? (workerUser?.rating ? workerUser.rating.toFixed(1) : '5.0') : 'New'}
                           </span>
                           <span className="text-xs font-bold text-black/60">
                             · {workerUser?.completed_tasks || 0} tasks done
@@ -538,12 +538,12 @@ export default function TaskDetailPage() {
 
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 brutal-border bg-taskYellow flex items-center justify-center font-black text-lg">
-                {requester?.name?.charAt(0) || 'S'}
+                {(requester?.nickname || requester?.name)?.charAt(0) || 'S'}
               </div>
               <div className="truncate">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h4 className="font-black text-base uppercase text-taskBlack truncate">
-                    {requester?.name || 'Student Requester'}
+                    {requester?.nickname || requester?.name || 'Student Requester'}
                   </h4>
                   {requester?.admin_verified && (
                     <VerifiedProfileBadge isVerified={true} size="xs" />
@@ -551,7 +551,7 @@ export default function TaskDetailPage() {
                 </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-black/70">
                   <span className="flex items-center text-black font-black">
-                    ★ {requester?.rating?.toFixed(1) || '5.0'}
+                    ★ {(requester?.completed_tasks && requester.completed_tasks > 0) ? (requester?.rating ? requester.rating.toFixed(1) : '5.0') : 'New'}
                   </span>
                   <span>·</span>
                   <span>{requester?.completed_tasks || 0} tasks completed</span>

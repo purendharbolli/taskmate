@@ -415,7 +415,7 @@ export default function OrderChatPage() {
             {/* Peer Identity Box */}
             <div className="shrink-0 bg-white border border-black p-2 shadow-[2px_2px_0px_0px_#000] flex items-center gap-2.5">
               <div className="w-9 h-9 bg-taskBlue border border-black font-black flex items-center justify-center text-sm">
-                {peerUser?.name?.charAt(0) || 'P'}
+                {(peerUser?.nickname || peerUser?.name)?.charAt(0) || 'P'}
               </div>
               <div className="text-left text-xs">
                 <span className="text-[10px] font-bold text-black/60 uppercase block">
@@ -423,7 +423,7 @@ export default function OrderChatPage() {
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="font-black text-taskBlack block leading-tight truncate max-w-[130px]">
-                    {peerUser?.name || 'Campus Student'}
+                    {peerUser?.nickname || peerUser?.name || 'Campus Student'}
                   </span>
                   {peerUser?.admin_verified && (
                     <VerifiedProfileBadge isVerified={true} size="xs" />
@@ -459,7 +459,7 @@ export default function OrderChatPage() {
               const isSenderMe = m.sender_id === currentUserId;
               const senderName = isSenderMe
                 ? 'You'
-                : (m as any).sender?.name || (isRequester ? worker?.name : requester?.name) || 'Peer';
+                : (m as any).sender?.nickname || (m as any).sender?.name || (isRequester ? (worker?.nickname || worker?.name) : (requester?.nickname || requester?.name)) || 'Peer';
 
               const attachment = m.attachment;
               const driveLink = (m as any).google_drive_link;

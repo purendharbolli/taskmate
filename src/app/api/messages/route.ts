@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { isDisallowedFileType, sanitizeUser } from '@/lib/security';
+import { isDisallowedFileType, sanitizeUser, sanitizePublicUser } from '@/lib/security';
 import { syncRecordToSupabase } from '@/lib/supabase';
 
 // STRICT 50 MB LIMIT
@@ -56,8 +56,8 @@ export async function GET(req: NextRequest) {
         created_at: order.created_at,
       },
       task: order.task,
-      requester: sanitizeUser(order.requester),
-      worker: sanitizeUser(order.worker),
+      requester: sanitizePublicUser(order.requester),
+      worker: sanitizePublicUser(order.worker),
       currentUserId: user.id,
     });
   } catch (err: any) {

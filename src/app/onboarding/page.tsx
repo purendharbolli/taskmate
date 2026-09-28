@@ -764,7 +764,7 @@ export default function OnboardingPage() {
                     {nickname}
                   </span>
                   <span className="text-[11px] font-bold text-black/60">
-                    {name} ({currentUserEmail})
+                    Public Identity on TaskMate
                   </span>
                 </div>
                 <span className="bg-taskYellow px-2.5 py-1 text-[10px] font-black brutal-border">

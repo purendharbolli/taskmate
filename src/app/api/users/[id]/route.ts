@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { sanitizeUser } from '@/lib/security';
+import { getCurrentUser } from '@/lib/auth';
+import { sanitizeUser, sanitizePublicUser } from '@/lib/security';
 
 export async function GET(
   req: NextRequest,
@@ -19,9 +20,14 @@ export async function GET(
 
     const tasksPosted = db.getTasks({ requesterId: user.id }).length;
 
+    // Check if viewer is the user themselves or platform administrator
+    const currentUser = await getCurrentUser();
+    const isSelf = currentUser?.id === user.id;
+    const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN';
+
     return NextResponse.json({
       success: true,
-      user: sanitizeUser(user),
+      user: isSelf || isAdmin ? sanitizeUser(user) : sanitizePublicUser(user),
       college,
       stats: {
         tasks_posted: tasksPosted,

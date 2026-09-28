@@ -139,14 +139,14 @@ export default function OrdersPage() {
                     <span>
                       Requester:{' '}
                       <strong className="text-taskBlack uppercase">
-                        {(order as any).requester?.name || 'Peer'}
+                        {(order as any).requester?.nickname || (order as any).requester?.name || 'Peer'}
                       </strong>
                     </span>
                     <span>·</span>
                     <span>
                       Worker:{' '}
                       <strong className="text-taskBlack uppercase">
-                        {(order as any).worker?.name || 'Peer'}
+                        {(order as any).worker?.nickname || (order as any).worker?.name || 'Peer'}
                       </strong>
                     </span>
                     <span>·</span>

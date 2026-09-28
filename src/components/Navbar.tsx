@@ -247,10 +247,10 @@ export const Navbar: React.FC = () => {
                     <div className="absolute right-0 mt-2 w-56 bg-taskOffWhite brutal-border brutal-shadow-lg z-50 p-2 space-y-1">
                       <div className="p-2 border-b-2 border-black mb-1 bg-taskYellow">
                         <p className="font-black text-xs uppercase text-taskBlack truncate">
-                          {currentUser.nickname ? `${currentUser.nickname} · ${currentUser.name}` : currentUser.name}
+                          {currentUser.nickname || currentUser.name}
                         </p>
                         <p className="text-[11px] text-taskBlack/80 font-bold truncate">
-                          {currentUser.email}
+                          {currentUser.college?.name || currentUser.custom_college_name || (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' ? '🛡️ Campus Admin' : '🎓 Campus Student')}
                         </p>
                       </div>
 

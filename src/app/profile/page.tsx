@@ -251,8 +251,8 @@ export default function ProfilePage() {
                   {user.nickname || user.name}
                 </h1>
                 {user.nickname && user.nickname !== user.name && (
-                  <span className="text-xs font-bold text-black/60 bg-taskOffWhite px-2 py-0.5 brutal-border">
-                    {user.name}
+                  <span className="text-[11px] font-bold text-black/60 bg-taskOffWhite px-2 py-0.5 brutal-border" title="Your registered real name is private to your account">
+                    🔒 Real Name (Private): {user.name}
                   </span>
                 )}
 
@@ -317,10 +317,10 @@ export default function ProfilePage() {
 
           <div className="brutal-border bg-taskGreen/30 p-3">
             <span className="text-2xl font-black text-taskBlack block">
-              ★ {user.rating ? user.rating.toFixed(1) : '5.0'}
+              ★ {user.completed_tasks && user.completed_tasks > 0 && user.rating ? user.rating.toFixed(1) : '—'}
             </span>
             <span className="text-[10px] font-black uppercase text-black/60">
-              Peer Rating
+              {user.completed_tasks && user.completed_tasks > 0 ? 'Peer Rating' : 'No Ratings Yet'}
             </span>
           </div>
 

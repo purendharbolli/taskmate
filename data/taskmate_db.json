@@ -1163,7 +1163,8 @@
       "spent_total": 0,
       "created_at": "2026-01-01T00:00:00Z",
       "updated_at": "2026-09-25T12:00:00Z",
-      "last_login_at": "2026-09-25T15:00:00Z"
+      "last_login_at": "2026-09-25T15:00:00Z",
+      "nickname": "CampusAdmin"
     }
   ],
   "tasks": [

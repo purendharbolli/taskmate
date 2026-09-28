@@ -27,6 +27,7 @@ export default function SettingsPage() {
 
   // Form Fields
   const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [bio, setBio] = useState('');
   const [collegeId, setCollegeId] = useState('');
   const [skills, setSkills] = useState('');
@@ -39,6 +40,7 @@ export default function SettingsPage() {
         if (data.user) {
           setUser(data.user);
           setName(data.user.name);
+          setNickname(data.user.nickname || '');
           setBio(data.user.bio || '');
           setCollegeId(data.user.college_id || 'col-snist');
           setSkills(data.user.skills?.join(', ') || 'Handwriting, Diagrams, PowerPoint');
@@ -66,6 +68,7 @@ export default function SettingsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name,
+        nickname: nickname.trim(),
         bio,
         college_id: collegeId,
         skills: skillsArray,
@@ -130,7 +133,26 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-black uppercase mb-1">Full Name</label>
+                <label className="block text-xs font-black uppercase mb-1">
+                  Nickname (Public Identity)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="e.g. AlexCampus, NoteCraft"
+                  className="w-full brutal-input px-3.5 py-2 text-xs font-bold bg-taskYellow/10"
+                />
+                <span className="text-[10px] font-bold text-black/60 block mt-1">
+                  Visible to other students across TaskMate. Your real name &amp; email stay private.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase mb-1">
+                  Full Name (Private)
+                </label>
                 <input
                   type="text"
                   required
@@ -138,19 +160,25 @@ export default function SettingsPage() {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full brutal-input px-3.5 py-2 text-xs font-bold"
                 />
+                <span className="text-[10px] font-bold text-black/60 block mt-1">
+                  Used for account identification only. Not shown to other students.
+                </span>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-black uppercase mb-1">
-                  Registered Email (Private)
-                </label>
-                <input
-                  type="email"
-                  disabled
-                  value={user.email}
-                  className="w-full brutal-input px-3.5 py-2 text-xs font-bold bg-gray-100 opacity-70 cursor-not-allowed"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-black uppercase mb-1">
+                Registered Email (Private)
+              </label>
+              <input
+                type="email"
+                disabled
+                value={user.email}
+                className="w-full brutal-input px-3.5 py-2 text-xs font-bold bg-gray-100 opacity-70 cursor-not-allowed"
+              />
+              <span className="text-[10px] font-bold text-black/60 block mt-1">
+                Never shared publicly with other students or campus peers.
+              </span>
             </div>
 
             <div>

@@ -99,6 +99,40 @@ export function sanitizeUser<T extends Record<string, any>>(user: T | null | und
 }
 
 /**
+ * Strips all confidential, personal contact info, and private credentials
+ * (email, phone, password_hash, recovery_questions, earnings, warnings, notes)
+ * before a user profile or embedded user record is returned to public viewers.
+ *
+ * The public display name defaults to the user's nickname if set.
+ */
+export function sanitizePublicUser<T extends Record<string, any>>(user: T | null | undefined): any | null {
+  if (!user) return null;
+  const publicDisplayName = user.nickname?.trim() || user.name;
+  return {
+    id: user.id,
+    name: publicDisplayName,
+    nickname: user.nickname?.trim() || undefined,
+    avatar: user.avatar,
+    role: user.role,
+    bio: user.bio,
+    skills: user.skills || [],
+    rating: (user.completed_tasks && user.completed_tasks > 0) ? user.rating : 0,
+    completed_tasks: user.completed_tasks || 0,
+    completion_rate: user.completion_rate !== undefined ? user.completion_rate : 100,
+    admin_verified: Boolean(user.admin_verified),
+    college_verified: Boolean(user.college_verified),
+    verification_status: user.verification_status,
+    college_id: user.college_id,
+    custom_college_name: user.custom_college_name,
+    area: user.area,
+    city_id: user.city_id,
+    state_id: user.state_id,
+    country_id: user.country_id,
+    college: user.college,
+  };
+}
+
+/**
  * Basic protection against sending invalid or unsafe executable files in chat and task uploads.
  */
 const DISALLOWED_EXTENSIONS = new Set([

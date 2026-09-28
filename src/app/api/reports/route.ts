@@ -62,10 +62,10 @@ export async function POST(req: NextRequest) {
 
     const result = db.createModerationReport({
       reporter_id: user.id,
-      reporter_name: user.name,
+      reporter_name: user.nickname || user.name,
       reporter_email: user.email,
       reported_user_id: reportedUser.id,
-      reported_user_name: reportedUser.name,
+      reported_user_name: reportedUser.nickname || reportedUser.name,
       related_task_id: related_task_id || undefined,
       related_task_title: relatedTaskTitle,
       reason,

@@ -61,6 +61,7 @@ export async function getCurrentUser(): Promise<User | null> {
     user = db.createUser({
       id: userId && userId.startsWith('usr-') ? userId : `usr-${Date.now()}`,
       name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+      nickname: baseName,
       email: email,
       avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}&backgroundColor=ffd84d`,
       auth_provider: 'email',
@@ -68,7 +69,7 @@ export async function getCurrentUser(): Promise<User | null> {
       college_verified: false,
       role: 'USER',
       skills: [],
-      rating: 5.0,
+      rating: 0,
       completed_tasks: 0,
       completion_rate: 100,
       onboarding_completed: false,

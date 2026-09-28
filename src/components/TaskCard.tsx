@@ -102,6 +102,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <span className="text-[10px] font-bold text-black/60 bg-black/5 px-1.5 py-0.5 border border-black/15">
               {formatTimeAgo(task.created_at)}
             </span>
+            {task.requester && (
+              <span className="text-[10px] font-black uppercase text-taskBlack/75 bg-taskYellow/30 px-1.5 py-0.5 border border-black/20 truncate max-w-[120px]" title={`Posted by @${task.requester.nickname || task.requester.name}`}>
+                @{task.requester.nickname || task.requester.name}
+              </span>
+            )}
             {Boolean(task.requester_verified || task.requester?.admin_verified) && (
               <VerifiedProfileBadge isVerified={true} size="xs" />
             )}

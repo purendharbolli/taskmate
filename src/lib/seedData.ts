@@ -1017,6 +1017,7 @@ export const initialSeedData: DatabaseSchema = {
     {
       id: 'usr-admin-1',
       name: 'Campus Lead Admin',
+      nickname: 'CampusAdmin',
       email: 'admin@taskmate.campus',
       avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Admin&backgroundColor=ffd84d',
       auth_provider: 'email',

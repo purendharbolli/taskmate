@@ -109,7 +109,7 @@ export default function DashboardPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-taskBlack">
-            {getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Student'}!
+            {getGreeting()}, {currentUser?.nickname || currentUser?.name?.split(' ')[0] || 'Student'}!
           </h1>
           <p className="text-xs sm:text-sm font-bold text-taskBlack/70 mt-1">
             Manage your campus tasks, active applications, and student earnings.
@@ -158,9 +158,13 @@ export default function DashboardPage() {
           <span className="text-xs font-black uppercase text-taskBlack/60">Student Rating</span>
           <div className="text-3xl font-black text-taskYellow flex items-center gap-1.5">
             <Star className="w-6 h-6 fill-taskYellow stroke-black stroke-2" />
-            <span className="text-taskBlack">{ratingValue.toFixed(1)}</span>
+            <span className="text-taskBlack">
+              {completedCount > 0 && ratingValue ? ratingValue.toFixed(1) : '—'}
+            </span>
           </div>
-          <p className="text-[11px] font-bold text-black/50">Based on verified reviews</p>
+          <p className="text-[11px] font-bold text-black/50">
+            {completedCount > 0 ? 'Based on verified reviews' : 'No ratings yet (new profile)'}
+          </p>
         </div>
       </div>
 

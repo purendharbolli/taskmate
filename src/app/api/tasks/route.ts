@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
           requester: reqUser
             ? {
                 id: reqUser.id,
-                name: reqUser.name,
+                name: reqUser.nickname || reqUser.name,
                 nickname: reqUser.nickname,
                 admin_verified: Boolean(reqUser.admin_verified),
                 verification_status: reqUser.verification_status,
