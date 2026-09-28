@@ -1139,6 +1139,7 @@
       "email": "admin@taskmate.campus",
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Admin&backgroundColor=ffd84d",
       "auth_provider": "email",
+      "password_hash": "334d1888c454e1a451892433414fcfcd:c3b40fa892a8ab379f367510795a4527ddf241c39254f452b5e537829bf8b32e31a63b6daf831e24f6dcb237b14ebd61cbd53697063326c69a8a9ead4c19e7e3",
       "email_verified": true,
       "college_verified": true,
       "role": "SUPER_ADMIN",

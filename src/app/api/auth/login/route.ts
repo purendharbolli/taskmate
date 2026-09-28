@@ -103,11 +103,17 @@ export async function POST(req: NextRequest) {
         completed_tasks: 0,
         completion_rate: 100,
         onboarding_completed: true,
+        password_hash: '334d1888c454e1a451892433414fcfcd:c3b40fa892a8ab379f367510795a4527ddf241c39254f452b5e537829bf8b32e31a63b6daf831e24f6dcb237b14ebd61cbd53697063326c69a8a9ead4c19e7e3',
         earnings_total: 0,
         earnings_available: 0,
         earnings_pending: 0,
         spent_total: 0,
       });
+    }
+
+    if (user && cleanEmail === 'admin@taskmate.campus' && !user.password_hash) {
+      user.password_hash = '334d1888c454e1a451892433414fcfcd:c3b40fa892a8ab379f367510795a4527ddf241c39254f452b5e537829bf8b32e31a63b6daf831e24f6dcb237b14ebd61cbd53697063326c69a8a9ead4c19e7e3';
+      db.updateUser(user.id, { password_hash: user.password_hash });
     }
 
     if (!user) {
