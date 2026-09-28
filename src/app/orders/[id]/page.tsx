@@ -27,6 +27,7 @@ import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
 import { SafetyGuidanceBanner } from '@/components/SafetyGuidanceBanner';
+import { VerifiedProfileBadge } from '@/components/VerifiedProfileBadge';
 import { Order, Task, User, Message, Dispute, Review } from '@/lib/types';
 import clsx from 'clsx';
 
@@ -699,6 +700,32 @@ export default function OrderDetailPage() {
                     Meeting Location
                   </span>
                   <span className="truncate block">{task?.location}</span>
+                </div>
+              </div>
+
+              {/* Order Participants & Verification Status */}
+              <div className="grid grid-cols-2 gap-2 text-xs font-black pt-1">
+                <div className="p-2.5 bg-white brutal-border">
+                  <span className="text-[10px] text-black/60 uppercase block font-semibold">
+                    Requester (Giver)
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <span className="truncate">{requester?.name || 'Requester'}</span>
+                    {requester?.admin_verified && (
+                      <VerifiedProfileBadge isVerified={true} size="xs" />
+                    )}
+                  </div>
+                </div>
+                <div className="p-2.5 bg-white brutal-border">
+                  <span className="text-[10px] text-black/60 uppercase block font-semibold">
+                    Taskmate (Worker)
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <span className="truncate">{worker?.name || 'Worker'}</span>
+                    {worker?.admin_verified && (
+                      <VerifiedProfileBadge isVerified={true} size="xs" />
+                    )}
+                  </div>
                 </div>
               </div>
 

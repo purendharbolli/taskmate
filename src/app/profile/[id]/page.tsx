@@ -19,6 +19,7 @@ import {
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
+import { VerifiedProfileBadge } from '@/components/VerifiedProfileBadge';
 import { User, College } from '@/lib/types';
 
 const REPORT_REASONS = [
@@ -212,9 +213,7 @@ export default function PublicProfilePage() {
               )}
 
               {user.admin_verified && (
-                <BrutalBadge variant="yellow" size="sm">
-                  ⭐ TRUSTED BADGE
-                </BrutalBadge>
+                <VerifiedProfileBadge isVerified={true} size="sm" />
               )}
               {user.college_verified && (
                 <BrutalBadge variant="green" size="sm">

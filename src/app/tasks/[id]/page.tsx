@@ -26,6 +26,7 @@ import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
 import { SafetyGuidanceBanner } from '@/components/SafetyGuidanceBanner';
+import { VerifiedProfileBadge } from '@/components/VerifiedProfileBadge';
 import { Task, TaskFile, Application, User as UserType, College } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import clsx from 'clsx';
@@ -392,10 +393,13 @@ export default function TaskDetailPage() {
                       className="brutal-border p-4 bg-taskOffWhite flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                     >
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="font-black text-sm uppercase text-taskBlack">
                             {workerUser?.name || 'Student Worker'}
                           </span>
+                          {workerUser?.admin_verified && (
+                            <VerifiedProfileBadge isVerified={true} size="xs" />
+                          )}
                           <span className="flex items-center text-xs font-black text-taskBlack">
                             ★ {workerUser?.rating || 5.0}
                           </span>
@@ -537,9 +541,14 @@ export default function TaskDetailPage() {
                 {requester?.name?.charAt(0) || 'S'}
               </div>
               <div className="truncate">
-                <h4 className="font-black text-base uppercase text-taskBlack truncate">
-                  {requester?.name || 'Student Requester'}
-                </h4>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h4 className="font-black text-base uppercase text-taskBlack truncate">
+                    {requester?.name || 'Student Requester'}
+                  </h4>
+                  {requester?.admin_verified && (
+                    <VerifiedProfileBadge isVerified={true} size="xs" />
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-black/70">
                   <span className="flex items-center text-black font-black">
                     ★ {requester?.rating?.toFixed(1) || '5.0'}

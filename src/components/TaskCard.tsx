@@ -12,6 +12,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { BrutalBadge } from './ui/BrutalBadge';
+import { VerifiedProfileBadge } from './VerifiedProfileBadge';
 import { Task } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 
@@ -101,6 +102,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <span className="text-[10px] font-bold text-black/60 bg-black/5 px-1.5 py-0.5 border border-black/15">
               {formatTimeAgo(task.created_at)}
             </span>
+            {Boolean(task.requester_verified || task.requester?.admin_verified) && (
+              <VerifiedProfileBadge isVerified={true} size="xs" />
+            )}
           </div>
 
           <span className="brutal-border bg-taskYellow px-2.5 py-1 text-sm font-black brutal-shadow-sm whitespace-nowrap">

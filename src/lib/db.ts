@@ -1232,24 +1232,74 @@ export const db = {
   },
 
   // Student Verification Requests
-  createVerificationRequest(req: { userId: string; collegeId: string; collegeEmail: string }): VerificationRequest {
+  createVerificationRequest(req: {
+    userId: string;
+    collegeId?: string;
+    collegeName?: string;
+    collegeEmail?: string;
+    studentIdNumber?: string;
+    phone?: string;
+    phoneVerified?: boolean;
+    documentUrl?: string;
+    documentFilename?: string;
+    documentType?: string;
+    userNotes?: string;
+  }): VerificationRequest {
     const data = loadDb();
     const user = data.users.find((u) => u.id === req.userId);
-    const college = data.colleges.find((c) => c.id === req.collegeId);
+    const college = req.collegeId ? data.colleges.find((c) => c.id === req.collegeId) : undefined;
+    const now = new Date().toISOString();
 
-    const newReq: VerificationRequest = {
-      id: `vr-${Date.now().toString(36)}`,
-      user_id: req.userId,
-      user_name: user?.name || 'Student',
-      college_id: req.collegeId,
-      college_name: college?.name || 'College',
-      college_email: req.collegeEmail,
-      status: 'PENDING',
-      submission_date: new Date().toISOString()
-    };
-    data.verification_requests.unshift(newReq);
+    let existing = data.verification_requests.find((v) => v.user_id === req.userId);
+
+    if (existing) {
+      if (req.collegeId) existing.college_id = req.collegeId;
+      if (req.collegeName || college?.name) existing.college_name = req.collegeName || college?.name || existing.college_name;
+      if (req.collegeEmail) existing.college_email = req.collegeEmail;
+      if (req.studentIdNumber) existing.student_id_number = req.studentIdNumber;
+      if (req.phone) existing.phone = req.phone;
+      if (req.phoneVerified !== undefined) existing.phone_verified = req.phoneVerified;
+      if (req.documentUrl) existing.document_url = req.documentUrl;
+      if (req.documentFilename) existing.document_filename = req.documentFilename;
+      if (req.documentType) existing.document_type = req.documentType;
+      if (req.userNotes) existing.user_notes = req.userNotes;
+      existing.status = 'PENDING';
+      existing.submission_date = now;
+      existing.updated_at = now;
+    } else {
+      existing = {
+        id: `vr-${Date.now().toString(36)}`,
+        user_id: req.userId,
+        user_name: user?.name || 'Student',
+        user_email: user?.email || '',
+        college_id: req.collegeId || user?.college_id || '',
+        college_name: req.collegeName || college?.name || user?.custom_college_name || 'Campus College',
+        college_email: req.collegeEmail || '',
+        student_id_number: req.studentIdNumber || '',
+        phone: req.phone || user?.phone || '',
+        phone_verified: req.phoneVerified || false,
+        document_url: req.documentUrl,
+        document_filename: req.documentFilename,
+        document_type: req.documentType,
+        user_notes: req.userNotes,
+        status: 'PENDING',
+        submission_date: now,
+        created_at: now,
+        updated_at: now,
+      };
+      data.verification_requests.unshift(existing);
+    }
+
+    if (user) {
+      user.verification_status = 'PENDING';
+      // Crucial: Users must never be able to manually add, modify, or fake the badge.
+      user.admin_verified = false;
+      if (req.phone) user.phone = req.phone;
+      if (req.phoneVerified) user.phone_verified = true;
+    }
+
     saveDb(data);
-    return newReq;
+    return existing;
   },
 
   getVerificationRequests(): VerificationRequest[] {
@@ -1259,7 +1309,7 @@ export const db = {
 
   reviewVerification(
     id: string,
-    status: 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_NEEDED',
+    status: 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_REQUIRED' | 'ADDITIONAL_INFO_NEEDED',
     notes: string,
     reviewerId: string,
     reviewerName?: string
@@ -1268,28 +1318,40 @@ export const db = {
     const req = data.verification_requests.find((v) => v.id === id);
     if (!req) return null;
 
+    const normalizedStatus = status === 'ADDITIONAL_INFO_NEEDED' ? 'ADDITIONAL_INFO_REQUIRED' : status;
     const now = new Date().toISOString();
-    req.status = status;
+    req.status = normalizedStatus;
     req.review_notes = notes;
     req.reviewed_by = reviewerName || reviewerId;
+    req.reviewed_by_id = reviewerId;
     req.reviewed_at = now;
+    req.updated_at = now;
 
-    // Update user college_verified flag
+    // Update user state: Verified Profile badge appears ONLY after admin approval
     const user = data.users.find((u) => u.id === req.user_id);
-    if (user && status === 'APPROVED') {
-      user.college_verified = true;
-      user.college_id = req.college_id;
+    if (user) {
+      user.verification_status = normalizedStatus;
+      if (normalizedStatus === 'APPROVED') {
+        user.admin_verified = true;
+        user.college_verified = true;
+        if (req.college_id) user.college_id = req.college_id;
+      } else {
+        user.admin_verified = false;
+      }
     }
 
-    // Notify user
-    let title = 'Verification Update ⚠️';
+    // User Notification using precise "Verified Profile" terminology
+    let title = 'Verified Profile Update';
     let message = `Your verification status: ${notes}`;
-    if (status === 'APPROVED') {
-      title = 'Student Status Verified! 🎓';
-      message = `You are now a Verified Student at ${req.college_name}! Verified badge added to your profile.`;
-    } else if (status === 'ADDITIONAL_INFO_NEEDED') {
-      title = 'Action Required: Student Verification 📝';
-      message = `Additional information needed for your college verification: "${notes}". Please submit additional proof.`;
+    if (normalizedStatus === 'APPROVED') {
+      title = 'Verified Profile Approved! ✓';
+      message = `Your verification request has been approved by TaskMate administrators. Your Verified Profile badge is now active. Note: This badge indicates admin review and does not guarantee future transactions or behavior.`;
+    } else if (normalizedStatus === 'REJECTED') {
+      title = 'Verification Request Update';
+      message = `Your verification request could not be approved. Reason: ${notes || 'Information provided did not meet criteria'}.`;
+    } else if (normalizedStatus === 'ADDITIONAL_INFO_REQUIRED') {
+      title = 'Action Required: Additional Information Needed';
+      message = `TaskMate administrators reviewed your request and require additional information: "${notes}". Please submit the requested details in your profile.`;
     }
 
     data.notifications.unshift({
@@ -1298,21 +1360,21 @@ export const db = {
       type: 'VERIFICATION_UPDATE',
       title,
       message,
-      link: `/profile`,
+      link: '/profile',
       read: false,
-      created_at: now
+      created_at: now,
     });
 
     data.audit_logs.unshift({
       id: `aud-${Date.now().toString(36)}`,
       user_id: reviewerId,
-      admin_name: reviewerName,
+      admin_name: reviewerName || 'Administrator',
       action: 'REVIEW_VERIFICATION',
       target_type: 'verification',
       target_id: id,
       target_name: req.user_name,
-      details: `${status}: ${notes}`,
-      created_at: now
+      details: `${normalizedStatus}: ${notes}`,
+      created_at: now,
     });
 
     saveDb(data);

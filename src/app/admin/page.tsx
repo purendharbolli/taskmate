@@ -301,16 +301,16 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Verification Review
-  const handleOpenVerificationReview = (v: VerificationRequest, defaultAction: 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_NEEDED') => {
+  const handleOpenVerificationReview = (v: VerificationRequest, defaultAction: 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_REQUIRED' | 'ADDITIONAL_INFO_NEEDED') => {
     setSelectedVerification(v);
-    setVerificationReviewAction(defaultAction);
+    const normalizedAction = defaultAction === 'ADDITIONAL_INFO_NEEDED' ? 'ADDITIONAL_INFO_REQUIRED' : defaultAction;
+    setVerificationReviewAction(normalizedAction as any);
     setVerificationNotes(
-      defaultAction === 'APPROVED'
-        ? 'Official campus institutional email verified.'
-        : defaultAction === 'ADDITIONAL_INFO_NEEDED'
-        ? 'Please provide a clear photo of your student ID card or hall ticket.'
-        : 'Ineligible or mismatched college domain proof.'
+      normalizedAction === 'APPROVED'
+        ? 'Student credentials verified by administrator. Verified Profile badge granted.'
+        : normalizedAction === 'ADDITIONAL_INFO_REQUIRED'
+        ? 'Please provide a clear photo of your student ID card or updated institutional details.'
+        : 'Submitted documentation could not be verified.'
     );
     setVerificationModalOpen(true);
   };
@@ -1237,17 +1237,18 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 5: TRUSTABLE VERIFICATION MANAGEMENT */}
+      {/* ========================================================================= */}
+      {/* TAB 5: VERIFIED PROFILE MANAGEMENT */}
       {/* ========================================================================= */}
       {activeTab === 'verification' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-black uppercase text-taskBlack">
-                Student Verification Queue ({verifications.length})
+                Verified Profile Queue ({verifications.length})
               </h2>
               <p className="text-xs font-bold text-black/60">
-                Review submitted institutional student proofs and grant official campus verified badges.
+                Manually review submitted College ID cards, phone verification, and student credentials. The &quot;Verified Profile&quot; badge is granted strictly after admin approval.
               </p>
             </div>
           </div>
@@ -1255,16 +1256,16 @@ export default function AdminDashboardPage() {
           <div className="space-y-3">
             {verifications.length === 0 ? (
               <p className="text-xs font-bold text-black/60 py-8 text-center bg-white brutal-border">
-                No verification requests found.
+                No verification requests found in queue.
               </p>
             ) : (
               verifications.map((v) => (
                 <div
                   key={v.id}
-                  className="bg-white brutal-border brutal-shadow p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="bg-white brutal-border brutal-shadow p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-black text-base uppercase text-taskBlack">
                         {v.user_name}
                       </span>
@@ -1274,33 +1275,72 @@ export default function AdminDashboardPage() {
                             ? 'green'
                             : v.status === 'REJECTED'
                             ? 'pink'
-                            : v.status === 'ADDITIONAL_INFO_NEEDED'
+                            : v.status === 'ADDITIONAL_INFO_NEEDED' || v.status === 'ADDITIONAL_INFO_REQUIRED'
                             ? 'blue'
                             : 'yellow'
                         }
                         size="sm"
                       >
-                        {v.status.replace('_', ' ')}
+                        {v.status === 'ADDITIONAL_INFO_NEEDED' || v.status === 'ADDITIONAL_INFO_REQUIRED'
+                          ? 'INFO REQUIRED'
+                          : v.status.replace('_', ' ')}
                       </BrutalBadge>
                     </div>
 
-                    <p className="text-xs font-bold text-black/70">
-                      College: <span className="text-taskBlack font-black">{v.college_name}</span> · Official Email:{' '}
-                      <span className="font-mono text-taskBlack font-black">{v.college_email}</span>
+                    <p className="text-xs font-bold text-black/80">
+                      College: <span className="text-taskBlack font-black">{v.college_name}</span>
+                      {v.student_id_number && (
+                        <span> · Roll/ID: <span className="font-mono text-taskBlack font-black">{v.student_id_number}</span></span>
+                      )}
                     </p>
 
-                    <div className="flex items-center gap-3 text-[10px] text-black/50 font-bold pt-1">
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-black/70">
+                      {v.phone && (
+                        <span>
+                          Phone: <strong className="font-mono text-taskBlack">{v.phone}</strong> {v.phone_verified ? '✓ (Confirmed)' : ''}
+                        </span>
+                      )}
+                      {v.college_email && (
+                        <span>
+                          Email: <strong className="font-mono text-taskBlack">{v.college_email}</strong>
+                        </span>
+                      )}
+                    </div>
+
+                    {v.user_notes && (
+                      <p className="text-[11px] font-semibold text-black/70 italic bg-taskOffWhite p-1.5 brutal-border">
+                        User Notes: &quot;{v.user_notes}&quot;
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-black/50 font-bold pt-1">
                       <span>Submitted: {new Date(v.submission_date).toLocaleDateString()}</span>
                       {v.reviewed_by && (
                         <span>Reviewed by: {v.reviewed_by}</span>
                       )}
+                      {v.reviewed_at && (
+                        <span>On: {new Date(v.reviewed_at).toLocaleDateString()}</span>
+                      )}
                       {v.review_notes && (
-                        <span className="text-taskBlack">Notes: &quot;{v.review_notes}&quot;</span>
+                        <span className="text-taskBlack font-black">Decision Notes: &quot;{v.review_notes}&quot;</span>
                       )}
                     </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {/* Private Document Viewer Button (Strictly accessible by authorized admins) */}
+                    {v.document_url && (
+                      <a
+                        href={v.document_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-black uppercase px-2.5 py-1.5 brutal-border bg-taskYellow text-black hover:bg-yellow-300 shadow-[1.5px_1.5px_0px_0px_#000] flex items-center gap-1"
+                        title="Open confidential College ID Card in secure admin viewer"
+                      >
+                        <span>Inspect ID Card ↗</span>
+                      </a>
+                    )}
+
                     <Link
                       href={`/profile/${v.user_id}`}
                       target="_blank"
@@ -1309,30 +1349,26 @@ export default function AdminDashboardPage() {
                       Profile ↗
                     </Link>
 
-                    {v.status === 'PENDING' && (
-                      <>
-                        <button
-                          onClick={() => handleOpenVerificationReview(v, 'ADDITIONAL_INFO_NEEDED')}
-                          className="text-xs font-black uppercase px-2.5 py-1.5 brutal-border bg-taskBlue text-black hover:bg-blue-300"
-                        >
-                          Request Info
-                        </button>
+                    <button
+                      onClick={() => handleOpenVerificationReview(v, 'ADDITIONAL_INFO_REQUIRED')}
+                      className="text-xs font-black uppercase px-2.5 py-1.5 brutal-border bg-taskBlue text-black hover:bg-blue-300"
+                    >
+                      Request Info
+                    </button>
 
-                        <button
-                          onClick={() => handleOpenVerificationReview(v, 'REJECTED')}
-                          className="text-xs font-black uppercase px-2.5 py-1.5 brutal-border bg-taskPink text-black hover:bg-red-300"
-                        >
-                          Reject
-                        </button>
+                    <button
+                      onClick={() => handleOpenVerificationReview(v, 'REJECTED')}
+                      className="text-xs font-black uppercase px-2.5 py-1.5 brutal-border bg-taskPink text-black hover:bg-red-300"
+                    >
+                      Reject
+                    </button>
 
-                        <button
-                          onClick={() => handleOpenVerificationReview(v, 'APPROVED')}
-                          className="text-xs font-black uppercase px-3 py-1.5 brutal-border bg-taskGreen text-taskBlack hover:bg-green-300 shadow-[2px_2px_0px_0px_#000]"
-                        >
-                          Approve ✓
-                        </button>
-                      </>
-                    )}
+                    <button
+                      onClick={() => handleOpenVerificationReview(v, 'APPROVED')}
+                      className="text-xs font-black uppercase px-3 py-1.5 brutal-border bg-taskGreen text-taskBlack hover:bg-green-300 shadow-[2px_2px_0px_0px_#000]"
+                    >
+                      Approve ✓
+                    </button>
                   </div>
                 </div>
               ))
@@ -1710,9 +1746,9 @@ export default function AdminDashboardPage() {
                 <span className="font-mono">{selectedUserContext.user.id}</span>
               </div>
               <div>
-                <span className="text-[10px] text-black/50 uppercase block">Institutional Verification</span>
-                <span className={selectedUserContext.user.college_verified ? 'text-green-700' : 'text-orange-600'}>
-                  {selectedUserContext.user.college_verified ? 'Verified Student ✓' : 'Unverified'}
+                <span className="text-[10px] text-black/50 uppercase block">Verified Profile Status</span>
+                <span className={selectedUserContext.user.admin_verified ? 'text-blue-700 font-bold' : 'text-black/60'}>
+                  {selectedUserContext.user.admin_verified ? 'Verified Profile (Admin Approved)' : 'Not Verified'}
                 </span>
               </div>
               <div>
@@ -2274,9 +2310,36 @@ export default function AdminDashboardPage() {
         title={`REVIEW VERIFICATION: ${selectedVerification?.user_name.toUpperCase()}`}
       >
         <form onSubmit={handleSubmitVerificationReview} className="space-y-4">
-          <div className="p-3 bg-taskOffWhite brutal-border text-xs font-bold space-y-1">
+          <div className="p-3 bg-taskOffWhite brutal-border text-xs font-bold space-y-1.5">
+            <div>User: <strong className="text-taskBlack">{selectedVerification?.user_name}</strong></div>
             <div>College: <strong className="text-taskBlack">{selectedVerification?.college_name}</strong></div>
-            <div>Submitted Domain Email: <strong className="font-mono text-taskBlack">{selectedVerification?.college_email}</strong></div>
+            {selectedVerification?.student_id_number && (
+              <div>Roll / Student ID: <strong className="font-mono text-taskBlack">{selectedVerification.student_id_number}</strong></div>
+            )}
+            {selectedVerification?.phone && (
+              <div>Phone: <strong className="font-mono text-taskBlack">{selectedVerification.phone}</strong> {selectedVerification.phone_verified ? '✓ (Confirmed)' : ''}</div>
+            )}
+            {selectedVerification?.college_email && (
+              <div>Submitted Email: <strong className="font-mono text-taskBlack">{selectedVerification.college_email}</strong></div>
+            )}
+            {selectedVerification?.user_notes && (
+              <div className="p-2 bg-white brutal-border text-[11px] text-taskBlack/85">
+                <strong>Applicant Notes:</strong> &quot;{selectedVerification.user_notes}&quot;
+              </div>
+            )}
+            {selectedVerification?.document_url && (
+              <div className="pt-2 border-t border-black/20">
+                <a
+                  href={selectedVerification.document_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-taskYellow text-taskBlack brutal-border font-black text-xs uppercase hover:bg-yellow-300 shadow-[1.5px_1.5px_0px_0px_#000]"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Inspect Submitted College ID Card (Private Admin Document) ↗</span>
+                </a>
+              </div>
+            )}
           </div>
 
           <div>
@@ -2285,8 +2348,8 @@ export default function AdminDashboardPage() {
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'APPROVED', label: 'APPROVE', color: 'bg-taskGreen' },
-                { id: 'ADDITIONAL_INFO_NEEDED', label: 'REQUEST INFO', color: 'bg-taskBlue' },
+                { id: 'APPROVED', label: 'APPROVE VERIFIED PROFILE', color: 'bg-taskGreen' },
+                { id: 'ADDITIONAL_INFO_REQUIRED', label: 'REQUEST INFO', color: 'bg-taskBlue' },
                 { id: 'REJECTED', label: 'REJECT', color: 'bg-taskPink' },
               ].map((act) => (
                 <button
@@ -2294,7 +2357,7 @@ export default function AdminDashboardPage() {
                   type="button"
                   onClick={() => setVerificationReviewAction(act.id as any)}
                   className={clsx(
-                    'py-2 brutal-border text-[11px] font-black uppercase',
+                    'py-2 px-1 brutal-border text-[10px] font-black uppercase text-center',
                     verificationReviewAction === act.id
                       ? `${act.color} text-taskBlack shadow-[2px_2px_0px_0px_#000]`
                       : 'bg-white hover:bg-taskOffWhite'

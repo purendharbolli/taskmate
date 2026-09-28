@@ -19,6 +19,8 @@ export interface User {
   email_verified: boolean;
   college_verified: boolean;
   admin_verified?: boolean;
+  verification_status?: VerificationStatus;
+  phone_verified?: boolean;
   role: UserRole;
   country_id?: string;
   state_id?: string;
@@ -138,6 +140,8 @@ export interface Task {
   view_count: number;
   college?: College;
   category?: Category;
+  requester?: Partial<User>;
+  requester_verified?: boolean;
   files?: TaskFile[];
 }
 
@@ -277,19 +281,37 @@ export interface Message {
   created_at: string;
 }
 
+export type VerificationStatus =
+  | 'NOT_REQUESTED'
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'ADDITIONAL_INFO_REQUIRED'
+  | 'ADDITIONAL_INFO_NEEDED';
+
 export interface VerificationRequest {
   id: string;
   user_id: string;
   user_name: string;
+  user_email?: string;
+  phone?: string;
+  phone_verified?: boolean;
   college_id: string;
   college_name: string;
-  college_email: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ADDITIONAL_INFO_NEEDED';
+  college_email?: string;
+  student_id_number?: string;
+  document_url?: string;
+  document_filename?: string;
+  document_type?: string;
+  user_notes?: string;
+  status: VerificationStatus;
   submission_date: string;
   reviewed_by?: string;
+  reviewed_by_id?: string;
   reviewed_at?: string;
   review_notes?: string;
-  document_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export type ModerationReportStatus = 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED' | 'OPEN';

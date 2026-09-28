@@ -69,6 +69,7 @@ export async function GET(req: NextRequest) {
     const categories = db.getCategories();
     const colleges = db.getColleges();
     const cities = db.getCities();
+    const users = db.getUsers();
 
     const enrichedTasks = await Promise.all(
       tasks.map(async (t) => {
@@ -79,10 +80,21 @@ export async function GET(req: NextRequest) {
             files = suFiles;
           }
         }
+        const reqUser = users.find((u) => u.id === t.requester_id);
         return {
           ...t,
           category: categories.find((c) => c.id === t.category_id),
           college: colleges.find((c) => c.id === t.college_id),
+          requester: reqUser
+            ? {
+                id: reqUser.id,
+                name: reqUser.name,
+                nickname: reqUser.nickname,
+                admin_verified: Boolean(reqUser.admin_verified),
+                verification_status: reqUser.verification_status,
+              }
+            : undefined,
+          requester_verified: Boolean(reqUser?.admin_verified),
           files,
         };
       })

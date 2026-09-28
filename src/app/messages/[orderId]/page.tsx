@@ -25,6 +25,7 @@ import {
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { SafetyGuidanceBanner } from '@/components/SafetyGuidanceBanner';
+import { VerifiedProfileBadge } from '@/components/VerifiedProfileBadge';
 import { Order, Task, User, Message } from '@/lib/types';
 import { isDisallowedFileType } from '@/lib/security';
 import clsx from 'clsx';
@@ -420,9 +421,14 @@ export default function OrderChatPage() {
                 <span className="text-[10px] font-bold text-black/60 uppercase block">
                   {isRequester ? 'Taskmate (Worker)' : 'Task Giver (Requester)'}
                 </span>
-                <span className="font-black text-taskBlack block leading-tight truncate max-w-[130px]">
-                  {peerUser?.name || 'Campus Student'}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black text-taskBlack block leading-tight truncate max-w-[130px]">
+                    {peerUser?.name || 'Campus Student'}
+                  </span>
+                  {peerUser?.admin_verified && (
+                    <VerifiedProfileBadge isVerified={true} size="xs" />
+                  )}
+                </div>
               </div>
             </div>
           </div>
