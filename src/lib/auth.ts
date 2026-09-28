@@ -80,6 +80,19 @@ export async function getCurrentUser(): Promise<User | null> {
     });
   }
 
+  if (user) {
+    const adminEmails = (process.env.ADMIN_EMAILS || 'admin@taskmate.campus')
+      .toLowerCase()
+      .split(',')
+      .map((e) => e.trim());
+    if (adminEmails.includes(user.email.toLowerCase())) {
+      if (user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN') {
+        user.role = 'SUPER_ADMIN';
+        db.updateUser(user.id, { role: 'SUPER_ADMIN' });
+      }
+    }
+  }
+
   return user ? sanitizeUser(user) : null;
 }
 
@@ -119,5 +132,10 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<User> {
 export function canAccessAdmin(user: User | null): boolean {
   if (!user) return false;
   if (user.is_suspended) return false;
+  const adminEmails = (process.env.ADMIN_EMAILS || 'admin@taskmate.campus')
+    .toLowerCase()
+    .split(',')
+    .map((e) => e.trim());
+  if (adminEmails.includes(user.email.toLowerCase())) return true;
   return user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'MODERATOR';
 }

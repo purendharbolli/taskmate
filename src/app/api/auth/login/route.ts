@@ -88,6 +88,28 @@ export async function POST(req: NextRequest) {
     // ==========================================
     // ACTION: LOGIN
     // ==========================================
+    if (!user && cleanEmail === 'admin@taskmate.campus') {
+      user = db.createUser({
+        id: 'usr-admin-1',
+        name: 'Campus Lead Admin',
+        email: 'admin@taskmate.campus',
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Admin&backgroundColor=ffd84d',
+        auth_provider: 'email',
+        email_verified: true,
+        college_verified: true,
+        role: 'SUPER_ADMIN',
+        skills: ['Platform Admin', 'Moderation'],
+        rating: 5.0,
+        completed_tasks: 0,
+        completion_rate: 100,
+        onboarding_completed: true,
+        earnings_total: 0,
+        earnings_available: 0,
+        earnings_pending: 0,
+        spent_total: 0,
+      });
+    }
+
     if (!user) {
       return NextResponse.json(
         {
@@ -117,6 +139,20 @@ export async function POST(req: NextRequest) {
           { status: 401 }
         );
       }
+    } else if (password) {
+      // First-time login: save provided password as secure hash
+      const hash = (await import('@/lib/security')).hashPassword(password);
+      db.updateUser(user.id, { password_hash: hash });
+    }
+
+    // Check if user is an admin by email
+    const envAdmins = (process.env.ADMIN_EMAILS || 'admin@taskmate.campus')
+      .toLowerCase()
+      .split(',')
+      .map((e) => e.trim());
+    if (envAdmins.includes(user.email.toLowerCase()) && user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN') {
+      user.role = 'SUPER_ADMIN';
+      db.updateUser(user.id, { role: 'SUPER_ADMIN' });
     }
 
     // Update last login timestamp
@@ -124,10 +160,12 @@ export async function POST(req: NextRequest) {
       last_login_at: new Date().toISOString(),
     });
 
+    const isAdminUser = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'MODERATOR';
+
     const res = NextResponse.json({
       success: true,
       user: sanitizeUser(user),
-      redirectTo: user.onboarding_completed ? '/dashboard' : '/onboarding',
+      redirectTo: isAdminUser ? '/admin' : user.onboarding_completed ? '/dashboard' : '/onboarding',
     });
 
     setSessionCookies(res, user);

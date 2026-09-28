@@ -286,13 +286,13 @@ export const Navbar: React.FC = () => {
                         Settings
                       </Link>
 
-                      {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') && (
+                      {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'MODERATOR') && (
                         <Link
                           href="/admin"
                           onClick={() => setUserMenuOpen(false)}
-                          className="block p-2 text-xs font-black text-purple-900 bg-taskPink/20 hover:bg-taskPink brutal-border border-black"
+                          className="block p-2 text-xs font-black text-purple-900 bg-taskPink/30 hover:bg-taskPink brutal-border border-black"
                         >
-                          Admin Portal
+                          🛡️ Admin Dashboard
                         </Link>
                       )}
 
@@ -369,6 +369,15 @@ export const Navbar: React.FC = () => {
                 >
                   Profile
                 </Link>
+                {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'MODERATOR') && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block p-2.5 text-xs font-black uppercase bg-taskPink/30 brutal-border hover:bg-taskPink"
+                  >
+                    🛡️ Admin Dashboard
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="w-full text-left p-2.5 text-xs font-black uppercase text-red-600 brutal-border hover:bg-red-50 flex items-center gap-1.5"
