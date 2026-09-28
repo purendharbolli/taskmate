@@ -75,6 +75,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (user.is_suspended) {
+      return NextResponse.json(
+        { error: 'Your account is suspended. You cannot send messages.' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { orderId, message, attachment, google_drive_link } = body;
 

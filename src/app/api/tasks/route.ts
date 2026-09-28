@@ -118,6 +118,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please log in to post a task.' }, { status: 401 });
     }
 
+    if (user.is_suspended) {
+      return NextResponse.json(
+        { error: 'Your account is suspended. You cannot post tasks.' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const {
       title,

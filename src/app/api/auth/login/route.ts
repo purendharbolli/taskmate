@@ -151,6 +151,44 @@ export async function POST(req: NextRequest) {
       db.updateUser(user.id, { password_hash: hash });
     }
 
+    // Check account moderation / suspension status
+    if (user.is_suspended) {
+      if (user.block_status === 'TEMPORARY' && user.blocked_until) {
+        if (new Date(user.blocked_until).getTime() <= Date.now()) {
+          // Expired temporary block: automatically unblock
+          user.is_suspended = false;
+          user.block_status = 'NONE';
+          user.suspension_reason = undefined;
+          user.blocked_until = undefined;
+          db.updateUser(user.id, {
+            is_suspended: false,
+            block_status: 'NONE',
+            suspension_reason: undefined,
+            blocked_until: undefined,
+          });
+        } else {
+          return NextResponse.json(
+            {
+              error: `Your account is temporarily suspended until ${new Date(user.blocked_until).toLocaleDateString()} ${new Date(user.blocked_until).toLocaleTimeString()}. Reason: ${user.suspension_reason || 'Policy violation'}.`,
+              suspended: true,
+              block_status: 'TEMPORARY',
+              blocked_until: user.blocked_until,
+            },
+            { status: 403 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          {
+            error: `Your account has been permanently suspended by campus administrators. Reason: ${user.suspension_reason || 'Severe violation of community guidelines'}.`,
+            suspended: true,
+            block_status: 'PERMANENT',
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Check if user is an admin by email
     const envAdmins = (process.env.ADMIN_EMAILS || 'admin@taskmate.campus')
       .toLowerCase()

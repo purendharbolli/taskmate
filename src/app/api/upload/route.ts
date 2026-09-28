@@ -30,6 +30,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please log in to upload files.' }, { status: 401 });
     }
 
+    if (user.is_suspended) {
+      return NextResponse.json(
+        { error: 'Your account is suspended. You cannot upload files.' },
+        { status: 403 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 

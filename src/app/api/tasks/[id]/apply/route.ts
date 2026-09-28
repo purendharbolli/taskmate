@@ -12,6 +12,13 @@ export async function POST(
       return NextResponse.json({ error: 'Please log in to apply.' }, { status: 401 });
     }
 
+    if (user.is_suspended) {
+      return NextResponse.json(
+        { error: 'Your account is suspended. You cannot apply for tasks.' },
+        { status: 403 }
+      );
+    }
+
     const taskData = db.getTaskById(params.id);
     if (!taskData) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
