@@ -26,6 +26,7 @@ import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
+import { SafetyGuidanceBanner } from '@/components/SafetyGuidanceBanner';
 import { Order, Task, User, Message, Dispute, Review } from '@/lib/types';
 import clsx from 'clsx';
 
@@ -398,6 +399,9 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
+            {/* Pre-payment safety guidance */}
+            <SafetyGuidanceBanner variant="payment" className="max-w-xl" />
+
             <div className="pt-2">
               <BrutalButton
                 variant="white"
@@ -485,12 +489,15 @@ export default function OrderDetailPage() {
                   </div>
                 )}
 
-                <div className="p-3 brutal-border bg-white text-xs font-bold text-taskBlack space-y-1">
-                  <p className="font-black uppercase text-red-600">
-                    ⚠️ IMPORTANT HANDOVER RULE:
+                <div className="p-3.5 brutal-border bg-white text-xs font-bold text-taskBlack space-y-2">
+                  <p className="font-black uppercase text-red-600 flex items-center gap-1.5">
+                    <span>⚠️ IMPORTANT HANDOVER &amp; VERIFICATION RULE:</span>
                   </p>
-                  <p>
-                    Give this OTP to the worker <strong>ONLY AFTER</strong> you inspect and receive your completed work on campus.
+                  <p className="leading-relaxed">
+                    Give this OTP to the worker <strong>ONLY AFTER</strong> you inspect and receive your completed work. If you and your TaskMate are from the same college, consider meeting in person in a safe/public place and confirming the work before payment.
+                  </p>
+                  <p className="text-[11px] text-black/70">
+                    Prefer genuine video proof or live verification of completed work rather than relying only on screenshots or images.
                   </p>
                 </div>
               </div>
@@ -590,6 +597,9 @@ export default function OrderDetailPage() {
             <p className="text-xs sm:text-sm font-bold text-taskBlack/80 leading-relaxed max-w-2xl">
               The OTP was confirmed on campus. Please review the finished handwriting, diagrams, or material. If everything is satisfactory, click complete to release payment to the student worker!
             </p>
+
+            {/* Pre-Release Verification Guidance */}
+            <SafetyGuidanceBanner variant="payment" className="max-w-2xl" />
 
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <BrutalButton

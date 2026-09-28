@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
+import { SafetyGuidanceBanner } from '@/components/SafetyGuidanceBanner';
 import { Order, Task, User, Message } from '@/lib/types';
 import { isDisallowedFileType } from '@/lib/security';
 import clsx from 'clsx';
@@ -426,6 +427,9 @@ export default function OrderChatPage() {
             </div>
           </div>
         </div>
+
+        {/* Safety Guidance Banner for Task Giver and Taskmate */}
+        <SafetyGuidanceBanner variant="chat" />
 
         {/* 2. Message History Log */}
         <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3 bg-[#FAF8F5]">

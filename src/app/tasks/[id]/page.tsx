@@ -25,6 +25,7 @@ import { BrutalButton } from '@/components/ui/BrutalButton';
 import { BrutalBadge } from '@/components/ui/BrutalBadge';
 import { BrutalModal } from '@/components/ui/BrutalModal';
 import { AcademicIntegrityBanner } from '@/components/AcademicIntegrityBanner';
+import { SafetyGuidanceBanner } from '@/components/SafetyGuidanceBanner';
 import { Task, TaskFile, Application, User as UserType, College } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/utils';
 import clsx from 'clsx';
@@ -363,6 +364,9 @@ export default function TaskDetailPage() {
 
             {/* Academic Integrity Notice */}
             <AcademicIntegrityBanner />
+
+            {/* Campus Safety Guidance */}
+            <SafetyGuidanceBanner variant="task" className="mt-4" />
           </div>
 
           {/* Requester View: Student Applicants List */}
@@ -376,6 +380,8 @@ export default function TaskDetailPage() {
                   Select a worker to lock payment and start
                 </span>
               </div>
+
+              <SafetyGuidanceBanner variant="inline" />
 
               <div className="space-y-3">
                 {applications.map((app) => {
